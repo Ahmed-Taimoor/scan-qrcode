@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>HTML5 QR Code Scanner</title>
+    <script src="dist/html5-qrcode.min.js"></script>
+</head>
+
+<body>
+    <div id="reader" style="width: 500px; height: 500px;"></div>
+    <script>
+        function onScanSuccess(decodedText, decodedResult) {
+            console.log(`Scan result: ${decodedText}`, decodedResult);
+        }
+        function onScanError(error) {
+            console.log(`Scan error: ${error}`);
+        }
+        const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
+        html5QrcodeScanner.render(onScanSuccess, onScanError);
+    </script>
+</body>
+
+</html>

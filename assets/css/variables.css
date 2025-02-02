@@ -1,0 +1,172 @@
+:root {
+  --primary-color: #9575CD /*deep-purple*/;
+  --primary-rgb: 149, 117, 205 /*deep-purple*/;
+  --primary-filter: 24,13,42 /*deep-purple*/;
+  --accent-color: #26C6DA /*cyan*/;
+  --accent-rgb: 38, 198, 218 /*cyan*/;
+
+  --danger-color: #E57373; /*red*/
+  --success-color: #81C784; /*green*/
+  --info-color: #64B5F6; /*blue*/
+  --warning-color: #ffc107; /*blue*/
+
+  --deep-purple-color: #9575CD;
+  --red-color: #E57373;
+  --orange-color: #ff8a65;
+  --blue-color: #64B5F6;
+  --green-color: #81C784;
+  --teal-color: #4db6ac;
+  --amber-color: #ffc107;
+  --pink-color: #f06292;
+  --indigo-color: #7986cb;
+  --blue-grey-color: #90a4ae;
+  --brown-color: #a1887f;
+  --cyan-color: #26C6DA;
+  --light-green-color: #8BC34A;
+  --purple-color: #BA68C8;
+  --grey-color: #616161;
+
+  --brand-facebook-color: #3b5998;
+  --brand-twitter-color: #1da1f2;
+  --brand-dribbble-color: #ea4c89;
+  --brand-google-plus-color: #ea4335;
+  --brand-linkedin-color: #007bb5;
+  --brand-whatsapp-color: #4fce5d;
+  --brand-gmail-color: #D44638;
+  --brand-pinterest-color: #E60023;
+  --brand-instagram-color: #A2292E;
+  --brand-microsoft-color: #00A4EF;
+
+}
+
+body[data-theme="red"]{
+--primary-color: #008641; /*green*/
+--primary-rgb: 0, 123, 52; /*green*/
+--primary-filter: 23,82,26; /*green*/
+--accent-color: #f9a531; /*jaune*/
+--accent-rgb: 244, 155, 0; /*jaune*/
+}
+
+
+body[data-theme="orange"]{
+--primary-color: #008641; /*green*/
+--primary-rgb: 0, 123, 52; /*green*/
+--primary-filter: 23,82,26; /*green*/
+--accent-color: #f9a531; /*jaune*/
+--accent-rgb: 244, 155, 0; /*jaune*/
+}
+
+
+body[data-theme="blue"]{
+--primary-color: #008641; /*green*/
+--primary-rgb: 0, 123, 52; /*green*/
+--primary-filter: 23,82,26; /*green*/
+--accent-color: #f9a531; /*jaune*/
+--accent-rgb: 244, 155, 0; /*jaune*/
+}
+
+body[data-theme="green"]{
+--primary-color: #008641; /*green*/
+--primary-rgb: 0, 123, 52; /*green*/
+--primary-filter: 23,82,26; /*green*/
+--accent-color: #f9a531; /*jaune*/
+--accent-rgb: 244, 155, 0; /*jaune*/
+}
+
+
+body[data-theme="teal"]{
+--primary-color: #008641; /*green*/
+--primary-rgb: 0, 123, 52; /*green*/
+--primary-filter: 23,82,26; /*green*/
+--accent-color: #f9a531; /*jaune*/
+--accent-rgb: 244, 155, 0; /*jaune*/
+}
+
+
+body[data-theme="amber"]{
+--primary-color: #008641; /*green*/
+--primary-rgb: 0, 123, 52; /*green*/
+--primary-filter: 23,82,26; /*green*/
+--accent-color: #f9a531; /*jaune*/
+--accent-rgb: 244, 155, 0; /*jaune*/
+}
+
+
+body[data-theme="pink"]{
+--primary-color: #008641; /*green*/
+--primary-rgb: 0, 123, 52; /*green*/
+--primary-filter: 23,82,26; /*green*/
+--accent-color: #f9a531; /*jaune*/
+--accent-rgb: 244, 155, 0; /*jaune*/
+}
+
+
+body[data-theme="indigo"]{
+--primary-color: #008641; /*green*/
+--primary-rgb: 0, 123, 52; /*green*/
+--primary-filter: 23,82,26; /*green*/
+--accent-color: #f9a531; /*jaune*/
+--accent-rgb: 244, 155, 0; /*jaune*/
+}
+
+
+body[data-theme="blue-grey"]{
+--primary-color: #008641; /*green*/
+--primary-rgb: 0, 123, 52; /*green*/
+--primary-filter: 23,82,26; /*green*/
+--accent-color: #f9a531; /*jaune*/
+--accent-rgb: 244, 155, 0; /*jaune*/
+}
+
+
+body[data-theme="brown"]{
+--primary-color: #008641; /*green*/
+--primary-rgb: 0, 123, 52; /*green*/
+--primary-filter: 23,82,26; /*green*/
+--accent-color: #f9a531; /*jaune*/
+--accent-rgb: 244, 155, 0; /*jaune*/
+}
+
+
+body[data-theme="cyan"]{
+--primary-color: #008641; /*green*/
+--primary-rgb: 0, 123, 52; /*green*/
+--primary-filter: 23,82,26; /*green*/
+--accent-color: #f9a531; /*jaune*/
+--accent-rgb: 244, 155, 0; /*jaune*/
+}
+
+
+body[data-theme="light-green"]{
+--primary-color: #008641; /*green*/
+--primary-rgb: 0, 123, 52; /*green*/
+--primary-filter: 23,82,26; /*green*/
+--accent-color: #f9a531; /*jaune*/
+--accent-rgb: 244, 155, 0; /*jaune*/
+}
+
+body[data-theme="deep-purple"]{
+--primary-color: #008641; /*green*/
+--primary-rgb: 0, 123, 52; /*green*/
+--primary-filter: 23,82,26; /*green*/
+--accent-color: #f9a531; /*jaune*/
+--accent-rgb: 244, 155, 0; /*jaune*/
+  }
+
+
+body[data-theme="purple"]{
+--primary-color: #008641; /*green*/
+--primary-rgb: 0, 123, 52; /*green*/
+--primary-filter: 23,82,26; /*green*/
+--accent-color: #f9a531; /*jaune*/
+--accent-rgb: 244, 155, 0; /*jaune*/
+}
+
+
+body[data-theme="grey"]{
+--primary-color: #008641; /*green*/
+--primary-rgb: 0, 123, 52; /*green*/
+--primary-filter: 23,82,26; /*green*/
+--accent-color: #f9a531; /*jaune*/
+--accent-rgb: 244, 155, 0; /*jaune*/
+}
