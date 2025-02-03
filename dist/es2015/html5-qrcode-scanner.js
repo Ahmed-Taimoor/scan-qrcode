@@ -284,11 +284,11 @@ export class Html5QrcodeScanner {
     }
     createPermissionsUi(scpCameraScanRegion, requestPermissionContainer) {
         const $this = this;
-        if (ScanTypeSelector.isCameraScanType(this.currentScanType)
-            && this.persistedDataManager.hasCameraPermissions()) {
+        if (ScanTypeSelector.isCameraScanType(this.currentScanType)) {
             CameraPermissions.hasPermissions().then((hasPermissions) => {
                 if (hasPermissions) {
                     $this.createCameraListUi(scpCameraScanRegion, requestPermissionContainer);
+                    $this.renderCameraSelection([]);
                 }
                 else {
                     $this.persistedDataManager.setHasPermission(false);

@@ -286,11 +286,11 @@ var Html5QrcodeScanner = (function () {
     };
     Html5QrcodeScanner.prototype.createPermissionsUi = function (scpCameraScanRegion, requestPermissionContainer) {
         var $this = this;
-        if (ScanTypeSelector.isCameraScanType(this.currentScanType)
-            && this.persistedDataManager.hasCameraPermissions()) {
+        if (ScanTypeSelector.isCameraScanType(this.currentScanType)) {
             CameraPermissions.hasPermissions().then(function (hasPermissions) {
                 if (hasPermissions) {
                     $this.createCameraListUi(scpCameraScanRegion, requestPermissionContainer);
+                    $this.renderCameraSelection([]);
                 }
                 else {
                     $this.persistedDataManager.setHasPermission(false);
