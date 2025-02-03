@@ -186,35 +186,24 @@ var Html5QrcodeScanner = (function () {
         };
     };
     Html5QrcodeScanner.prototype.createBasicLayout = function (parent) {
-        parent.style.position = "fixed";
-        parent.style.top = "0";
-        parent.style.left = "0";
-        parent.style.width = "100vw";
-        parent.style.height = "100vh";
-        parent.style.padding = "0";
-        parent.style.margin = "0";
-        parent.style.border = "none";
-        parent.style.overflow = "hidden";
+        parent.style.position = "relative";
+        parent.style.padding = "0px";
+        parent.style.border = "1px solid silver";
+        this.createHeader(parent);
         var qrCodeScanRegion = document.createElement("div");
         var scanRegionId = this.getScanRegionId();
         qrCodeScanRegion.id = scanRegionId;
         qrCodeScanRegion.style.width = "100%";
-        qrCodeScanRegion.style.height = "100%";
-        qrCodeScanRegion.style.position = "absolute";
-        qrCodeScanRegion.style.top = "0";
-        qrCodeScanRegion.style.left = "0";
-        qrCodeScanRegion.style.zIndex = "1";
+        qrCodeScanRegion.style.minHeight = "100px";
+        qrCodeScanRegion.style.textAlign = "center";
         parent.appendChild(qrCodeScanRegion);
+        if (ScanTypeSelector.isCameraScanType(this.currentScanType)) {
+            this.insertCameraScanImageToScanRegion();
+        }
         var qrCodeDashboard = document.createElement("div");
         var dashboardId = this.getDashboardId();
         qrCodeDashboard.id = dashboardId;
         qrCodeDashboard.style.width = "100%";
-        qrCodeDashboard.style.position = "absolute";
-        qrCodeDashboard.style.bottom = "0";
-        qrCodeDashboard.style.zIndex = "2";
-        qrCodeDashboard.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
-        qrCodeDashboard.style.padding = "10px";
-        qrCodeDashboard.style.boxSizing = "border-box";
         parent.appendChild(qrCodeDashboard);
         this.setupInitialDashboard(qrCodeDashboard);
     };
@@ -353,17 +342,14 @@ var Html5QrcodeScanner = (function () {
     };
     Html5QrcodeScanner.prototype.renderCameraSelection = function (cameras) {
         var $this = this;
-        var scpCameraScanRegion = document.getElementById($this.getDashboardSectionCameraScanRegionId());
+        var scpCameraScanRegion = document.getElementById(this.getDashboardSectionCameraScanRegionId());
         scpCameraScanRegion.style.textAlign = "center";
-        var cameraId = cameras[0].id;
-        $this.html5Qrcode.start(cameraId, toHtml5QrcodeCameraScanConfig($this.config), $this.qrCodeSuccessCallback, $this.qrCodeErrorCallback).then(function () {
-            var videoElement = document.querySelector("video");
-            if (videoElement) {
-                videoElement.style.width = "100%";
-                videoElement.style.height = "100%";
-                videoElement.style.objectFit = "cover";
-            }
-        }).catch(function (error) {
+        var rearCamera = cameras.find(function (camera) {
+            return camera.label.toLowerCase().includes("back") ||
+                camera.label.toLowerCase().includes("rear");
+        });
+        var cameraId = rearCamera ? rearCamera.id : cameras[0].id;
+        $this.html5Qrcode.start(cameraId, toHtml5QrcodeCameraScanConfig($this.config), $this.qrCodeSuccessCallback, $this.qrCodeErrorCallback).catch(function (error) {
             console.error("Unable to start scanning: ", error);
         });
         var cameraSelector = document.createElement("select");
@@ -375,15 +361,11 @@ var Html5QrcodeScanner = (function () {
         });
         cameraSelector.onchange = function (event) {
             $this.html5Qrcode.stop().then(function () {
-                var selectedCameraId = event.target.value;
-                $this.html5Qrcode.start(selectedCameraId, toHtml5QrcodeCameraScanConfig($this.config), $this.qrCodeSuccessCallback, $this.qrCodeErrorCallback).then(function () {
-                    var videoElement = document.querySelector("video");
-                    if (videoElement) {
-                        videoElement.style.width = "100%";
-                        videoElement.style.height = "100%";
-                        videoElement.style.objectFit = "cover";
-                    }
-                });
+                var target = event.target;
+                if (target) {
+                    var selectedCameraId = target.value;
+                    $this.html5Qrcode.start(selectedCameraId, toHtml5QrcodeCameraScanConfig($this.config), $this.qrCodeSuccessCallback, $this.qrCodeErrorCallback);
+                }
             }).catch(function (error) {
                 console.error("Unable to switch cameras: ", error);
             });
@@ -506,9 +488,7 @@ var Html5QrcodeScanner = (function () {
             qrCodeScanRegion.innerHTML = "<br>";
             qrCodeScanRegion.appendChild($this.cameraScanImage);
         };
-        this.cameraScanImage.style.width = "100%";
-        this.cameraScanImage.style.height = "100%";
-        this.cameraScanImage.style.objectFit = "cover";
+        this.cameraScanImage.width = 64;
         this.cameraScanImage.style.opacity = "0.8";
         this.cameraScanImage.src = ASSET_CAMERA_SCAN;
         this.cameraScanImage.alt = Html5QrcodeScannerStrings.cameraScanAltText();
