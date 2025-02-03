@@ -494,32 +494,45 @@ export class Html5QrcodeScanner {
     };
 }
 
+private createBasicLayout(parent: HTMLElement) {
+    // Remove padding, margins, and borders from the parent container
+    parent.style.position = "fixed"; // Fix the container to the screen
+    parent.style.top = "0";
+    parent.style.left = "0";
+    parent.style.width = "100vw"; // Full viewport width
+    parent.style.height = "100vh"; // Full viewport height
+    parent.style.padding = "0";
+    parent.style.margin = "0";
+    parent.style.border = "none";
+    parent.style.overflow = "hidden"; // Prevent scrolling
 
-    private createBasicLayout(parent: HTMLElement) {
-        parent.style.position = "relative";
-        parent.style.padding = "0px";
-        parent.style.border = "1px solid silver";
-        this.createHeader(parent);
+    // Create the scan region (camera feed container)
+    const qrCodeScanRegion = document.createElement("div");
+    const scanRegionId = this.getScanRegionId();
+    qrCodeScanRegion.id = scanRegionId;
+    qrCodeScanRegion.style.width = "100%"; // Full width
+    qrCodeScanRegion.style.height = "100%"; // Full height
+    qrCodeScanRegion.style.position = "absolute"; // Position absolutely within the parent
+    qrCodeScanRegion.style.top = "0";
+    qrCodeScanRegion.style.left = "0";
+    qrCodeScanRegion.style.zIndex = "1"; // Ensure it's above other elements
+    parent.appendChild(qrCodeScanRegion);
 
-        const qrCodeScanRegion = document.createElement("div");
-        const scanRegionId = this.getScanRegionId();
-        qrCodeScanRegion.id = scanRegionId;
-        qrCodeScanRegion.style.width = "100%";
-        qrCodeScanRegion.style.minHeight = "100px";
-        qrCodeScanRegion.style.textAlign = "center";
-        parent.appendChild(qrCodeScanRegion);
-        if (ScanTypeSelector.isCameraScanType(this.currentScanType)) {
-            this.insertCameraScanImageToScanRegion();
-        }
+    // Create the dashboard (for camera selection, etc.)
+    const qrCodeDashboard = document.createElement("div");
+    const dashboardId = this.getDashboardId();
+    qrCodeDashboard.id = dashboardId;
+    qrCodeDashboard.style.width = "100%";
+    qrCodeDashboard.style.position = "absolute"; // Position absolutely
+    qrCodeDashboard.style.bottom = "0"; // Place at the bottom of the screen
+    qrCodeDashboard.style.zIndex = "2"; // Ensure it's above the camera feed
+    qrCodeDashboard.style.backgroundColor = "rgba(0, 0, 0, 0.5)"; // Semi-transparent background
+    qrCodeDashboard.style.padding = "10px";
+    qrCodeDashboard.style.boxSizing = "border-box";
+    parent.appendChild(qrCodeDashboard);
 
-        const qrCodeDashboard = document.createElement("div");
-        const dashboardId = this.getDashboardId();
-        qrCodeDashboard.id = dashboardId;
-        qrCodeDashboard.style.width = "100%";
-        parent.appendChild(qrCodeDashboard);
-
-        this.setupInitialDashboard(qrCodeDashboard);
-    }
+    this.setupInitialDashboard(qrCodeDashboard);
+}
 
     private resetBasicLayout(mainContainer: HTMLElement) {
         mainContainer.style.border = "none";
@@ -570,14 +583,14 @@ export class Html5QrcodeScanner {
         $this.showHideScanTypeSwapLink(false);
         $this.setHeaderMessage(
             Html5QrcodeScannerStrings.cameraPermissionRequesting());
-    
+
         const createPermissionButtonIfNotExists = () => {
             if (!requestPermissionButton) {
                 $this.createPermissionButton(
                     scpCameraScanRegion, requestPermissionContainer);
             }
         }
-    
+
         Html5Qrcode.getCameras().then((cameras) => {
             // By this point the user has granted camera permissions.
             $this.persistedDataManager.setHasPermission(
@@ -585,11 +598,7 @@ export class Html5QrcodeScanner {
             $this.showHideScanTypeSwapLink(true);
             $this.resetHeaderMessage();
             if (cameras && cameras.length > 0) {
-                // Remove the permission button container entirely
-                if (requestPermissionContainer.parentElement) {
-                    requestPermissionContainer.parentElement.removeChild(requestPermissionContainer);
-                }
-    
+                scpCameraScanRegion.removeChild(requestPermissionContainer);
                 $this.renderCameraSelection(cameras);
             } else {
                 $this.setHeaderMessage(
@@ -604,6 +613,12 @@ export class Html5QrcodeScanner {
             if (requestPermissionButton) {
                 requestPermissionButton.disabled = false;
             } else {
+                // Case when the permission button generation was skipped
+                // likely due to persistedDataManager indicated permissions
+                // exists.
+                // This should ideally never happen, but if it so happened that
+                // the camera retrieval failed, we want to create button this
+                // time.
                 createPermissionButtonIfNotExists();
             }
             $this.setHeaderMessage(
@@ -725,66 +740,59 @@ export class Html5QrcodeScanner {
     private renderCameraSelection(cameras: Array<CameraDevice>) {
         const $this = this;
         const scpCameraScanRegion = document.getElementById(
-            this.getDashboardSectionCameraScanRegionId())!;
+            $this.getDashboardSectionCameraScanRegionId())!;
         scpCameraScanRegion.style.textAlign = "center";
     
-        // Find the rear camera
-        const rearCamera = cameras.find(camera =>
-            camera.label.toLowerCase().includes("back") ||
-            camera.label.toLowerCase().includes("rear")
-        );
-    
-        // If no rear camera is found, fallback to the first camera
-        const cameraId = rearCamera ? rearCamera.id : cameras[0].id;
-    
         // Automatically start scanning with the selected camera
+        const cameraId = cameras[0].id; // Use the first camera by default
         $this.html5Qrcode!.start(
             cameraId,
             toHtml5QrcodeCameraScanConfig($this.config),
             $this.qrCodeSuccessCallback!,
             $this.qrCodeErrorCallback!
-        ).catch((error) => {
+        ).then(() => {
+            // Ensure the video element takes up the full screen
+            const videoElement = document.querySelector("video");
+            if (videoElement) {
+                videoElement.style.width = "100%"; // Full width
+                videoElement.style.height = "100%"; // Full height
+                videoElement.style.objectFit = "cover"; // Ensure the video covers the entire area
+            }
+        }).catch((error) => {
             console.error("Unable to start scanning: ", error);
         });
     
         // Add a dropdown to switch cameras
         const cameraSelector = document.createElement("select");
-        cameraSelector.style.margin = "10px 0"; // Add some margin for better spacing
-        cameraSelector.style.padding = "5px"; // Add padding for better appearance
-        cameraSelector.style.border = "1px solid #ccc"; // Add a border
-        cameraSelector.style.borderRadius = "4px"; // Add rounded corners
-    
         cameras.forEach(camera => {
             const option = document.createElement("option");
             option.value = camera.id;
             option.text = camera.label;
-            if (camera.id === cameraId) {
-                option.selected = true; // Select the rear or first camera by default
-            }
             cameraSelector.appendChild(option);
         });
     
         cameraSelector.onchange = (event) => {
-            const target = event.target as HTMLSelectElement | null;
-            if (!target) {
-                console.error("Event target is null");
-                return;
-            }
-    
-            const selectedCameraId = target.value;
             $this.html5Qrcode!.stop().then(() => {
+                const selectedCameraId = (event.target as HTMLSelectElement).value;
                 $this.html5Qrcode!.start(
                     selectedCameraId,
                     toHtml5QrcodeCameraScanConfig($this.config),
                     $this.qrCodeSuccessCallback!,
                     $this.qrCodeErrorCallback!
-                );
+                ).then(() => {
+                    // Ensure the video element takes up the full screen
+                    const videoElement = document.querySelector("video");
+                    if (videoElement) {
+                        videoElement.style.width = "100%"; // Full width
+                        videoElement.style.height = "100%"; // Full height
+                        videoElement.style.objectFit = "cover"; // Ensure the video covers the entire area
+                    }
+                });
             }).catch((error) => {
                 console.error("Unable to switch cameras: ", error);
             });
         };
     
-        // Append the dropdown to the camera scan region
         scpCameraScanRegion.appendChild(cameraSelector);
     }
 
@@ -927,24 +935,25 @@ export class Html5QrcodeScanner {
         const $this = this;
         const qrCodeScanRegion = document.getElementById(
             this.getScanRegionId())!;
-
+    
         if (this.cameraScanImage) {
             qrCodeScanRegion.innerHTML = "<br>";
             qrCodeScanRegion.appendChild(this.cameraScanImage);
             return;
         }
-
+    
         this.cameraScanImage = new Image;
         this.cameraScanImage.onload = (_) => {
             qrCodeScanRegion.innerHTML = "<br>";
             qrCodeScanRegion.appendChild($this.cameraScanImage!);
         }
-        this.cameraScanImage.width = 64;
+        this.cameraScanImage.style.width = "100%"; // Full width
+        this.cameraScanImage.style.height = "100%"; // Full height
+        this.cameraScanImage.style.objectFit = "cover"; // Ensure the image covers the entire area
         this.cameraScanImage.style.opacity = "0.8";
         this.cameraScanImage.src = ASSET_CAMERA_SCAN;
         this.cameraScanImage.alt = Html5QrcodeScannerStrings.cameraScanAltText();
     }
-
     // private insertFileScanImageToScanRegion() {
     //     const $this = this;
     //     const qrCodeScanRegion = document.getElementById(

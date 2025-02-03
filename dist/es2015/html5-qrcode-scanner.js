@@ -184,24 +184,35 @@ export class Html5QrcodeScanner {
         };
     }
     createBasicLayout(parent) {
-        parent.style.position = "relative";
-        parent.style.padding = "0px";
-        parent.style.border = "1px solid silver";
-        this.createHeader(parent);
+        parent.style.position = "fixed";
+        parent.style.top = "0";
+        parent.style.left = "0";
+        parent.style.width = "100vw";
+        parent.style.height = "100vh";
+        parent.style.padding = "0";
+        parent.style.margin = "0";
+        parent.style.border = "none";
+        parent.style.overflow = "hidden";
         const qrCodeScanRegion = document.createElement("div");
         const scanRegionId = this.getScanRegionId();
         qrCodeScanRegion.id = scanRegionId;
         qrCodeScanRegion.style.width = "100%";
-        qrCodeScanRegion.style.minHeight = "100px";
-        qrCodeScanRegion.style.textAlign = "center";
+        qrCodeScanRegion.style.height = "100%";
+        qrCodeScanRegion.style.position = "absolute";
+        qrCodeScanRegion.style.top = "0";
+        qrCodeScanRegion.style.left = "0";
+        qrCodeScanRegion.style.zIndex = "1";
         parent.appendChild(qrCodeScanRegion);
-        if (ScanTypeSelector.isCameraScanType(this.currentScanType)) {
-            this.insertCameraScanImageToScanRegion();
-        }
         const qrCodeDashboard = document.createElement("div");
         const dashboardId = this.getDashboardId();
         qrCodeDashboard.id = dashboardId;
         qrCodeDashboard.style.width = "100%";
+        qrCodeDashboard.style.position = "absolute";
+        qrCodeDashboard.style.bottom = "0";
+        qrCodeDashboard.style.zIndex = "2";
+        qrCodeDashboard.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
+        qrCodeDashboard.style.padding = "10px";
+        qrCodeDashboard.style.boxSizing = "border-box";
         parent.appendChild(qrCodeDashboard);
         this.setupInitialDashboard(qrCodeDashboard);
     }
@@ -251,9 +262,7 @@ export class Html5QrcodeScanner {
             $this.showHideScanTypeSwapLink(true);
             $this.resetHeaderMessage();
             if (cameras && cameras.length > 0) {
-                if (requestPermissionContainer.parentElement) {
-                    requestPermissionContainer.parentElement.removeChild(requestPermissionContainer);
-                }
+                scpCameraScanRegion.removeChild(requestPermissionContainer);
                 $this.renderCameraSelection(cameras);
             }
             else {
@@ -342,37 +351,37 @@ export class Html5QrcodeScanner {
     }
     renderCameraSelection(cameras) {
         const $this = this;
-        const scpCameraScanRegion = document.getElementById(this.getDashboardSectionCameraScanRegionId());
+        const scpCameraScanRegion = document.getElementById($this.getDashboardSectionCameraScanRegionId());
         scpCameraScanRegion.style.textAlign = "center";
-        const rearCamera = cameras.find(camera => camera.label.toLowerCase().includes("back") ||
-            camera.label.toLowerCase().includes("rear"));
-        const cameraId = rearCamera ? rearCamera.id : cameras[0].id;
-        $this.html5Qrcode.start(cameraId, toHtml5QrcodeCameraScanConfig($this.config), $this.qrCodeSuccessCallback, $this.qrCodeErrorCallback).catch((error) => {
+        const cameraId = cameras[0].id;
+        $this.html5Qrcode.start(cameraId, toHtml5QrcodeCameraScanConfig($this.config), $this.qrCodeSuccessCallback, $this.qrCodeErrorCallback).then(() => {
+            const videoElement = document.querySelector("video");
+            if (videoElement) {
+                videoElement.style.width = "100%";
+                videoElement.style.height = "100%";
+                videoElement.style.objectFit = "cover";
+            }
+        }).catch((error) => {
             console.error("Unable to start scanning: ", error);
         });
         const cameraSelector = document.createElement("select");
-        cameraSelector.style.margin = "10px 0";
-        cameraSelector.style.padding = "5px";
-        cameraSelector.style.border = "1px solid #ccc";
-        cameraSelector.style.borderRadius = "4px";
         cameras.forEach(camera => {
             const option = document.createElement("option");
             option.value = camera.id;
             option.text = camera.label;
-            if (camera.id === cameraId) {
-                option.selected = true;
-            }
             cameraSelector.appendChild(option);
         });
         cameraSelector.onchange = (event) => {
-            const target = event.target;
-            if (!target) {
-                console.error("Event target is null");
-                return;
-            }
-            const selectedCameraId = target.value;
             $this.html5Qrcode.stop().then(() => {
-                $this.html5Qrcode.start(selectedCameraId, toHtml5QrcodeCameraScanConfig($this.config), $this.qrCodeSuccessCallback, $this.qrCodeErrorCallback);
+                const selectedCameraId = event.target.value;
+                $this.html5Qrcode.start(selectedCameraId, toHtml5QrcodeCameraScanConfig($this.config), $this.qrCodeSuccessCallback, $this.qrCodeErrorCallback).then(() => {
+                    const videoElement = document.querySelector("video");
+                    if (videoElement) {
+                        videoElement.style.width = "100%";
+                        videoElement.style.height = "100%";
+                        videoElement.style.objectFit = "cover";
+                    }
+                });
             }).catch((error) => {
                 console.error("Unable to switch cameras: ", error);
             });
@@ -494,7 +503,9 @@ export class Html5QrcodeScanner {
             qrCodeScanRegion.innerHTML = "<br>";
             qrCodeScanRegion.appendChild($this.cameraScanImage);
         };
-        this.cameraScanImage.width = 64;
+        this.cameraScanImage.style.width = "100%";
+        this.cameraScanImage.style.height = "100%";
+        this.cameraScanImage.style.objectFit = "cover";
         this.cameraScanImage.style.opacity = "0.8";
         this.cameraScanImage.src = ASSET_CAMERA_SCAN;
         this.cameraScanImage.alt = Html5QrcodeScannerStrings.cameraScanAltText();
