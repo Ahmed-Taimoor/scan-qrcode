@@ -251,7 +251,7 @@ export class Html5QrcodeScanner {
             $this.showHideScanTypeSwapLink(true);
             $this.resetHeaderMessage();
             if (cameras && cameras.length > 0) {
-                requestPermissionContainer.style.display = "none";
+                scpCameraScanRegion.removeChild(requestPermissionContainer);
                 $this.renderCameraSelection(cameras);
             }
             else {
@@ -349,6 +349,10 @@ export class Html5QrcodeScanner {
             console.error("Unable to start scanning: ", error);
         });
         const cameraSelector = document.createElement("select");
+        cameraSelector.style.margin = "10px 0";
+        cameraSelector.style.padding = "5px";
+        cameraSelector.style.border = "1px solid #ccc";
+        cameraSelector.style.borderRadius = "4px";
         cameras.forEach(camera => {
             const option = document.createElement("option");
             option.value = camera.id;

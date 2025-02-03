@@ -585,10 +585,8 @@ export class Html5QrcodeScanner {
             $this.showHideScanTypeSwapLink(true);
             $this.resetHeaderMessage();
             if (cameras && cameras.length > 0) {
-                // Hide or remove the permission button container
-                requestPermissionContainer.style.display = "none"; // Hide the container
-                // Alternatively, you can remove it entirely:
-                // scpCameraScanRegion.removeChild(requestPermissionContainer);
+                // Remove the permission button container entirely
+                scpCameraScanRegion.removeChild(requestPermissionContainer);
     
                 $this.renderCameraSelection(cameras);
             } else {
@@ -749,6 +747,11 @@ export class Html5QrcodeScanner {
     
         // Add a dropdown to switch cameras
         const cameraSelector = document.createElement("select");
+        cameraSelector.style.margin = "10px 0"; // Add some margin for better spacing
+        cameraSelector.style.padding = "5px"; // Add padding for better appearance
+        cameraSelector.style.border = "1px solid #ccc"; // Add a border
+        cameraSelector.style.borderRadius = "4px"; // Add rounded corners
+    
         cameras.forEach(camera => {
             const option = document.createElement("option");
             option.value = camera.id;
@@ -779,6 +782,7 @@ export class Html5QrcodeScanner {
             });
         };
     
+        // Append the dropdown to the camera scan region
         scpCameraScanRegion.appendChild(cameraSelector);
     }
 

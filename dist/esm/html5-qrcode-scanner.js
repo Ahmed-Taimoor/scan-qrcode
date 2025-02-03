@@ -253,7 +253,7 @@ var Html5QrcodeScanner = (function () {
             $this.showHideScanTypeSwapLink(true);
             $this.resetHeaderMessage();
             if (cameras && cameras.length > 0) {
-                requestPermissionContainer.style.display = "none";
+                scpCameraScanRegion.removeChild(requestPermissionContainer);
                 $this.renderCameraSelection(cameras);
             }
             else {
@@ -353,6 +353,10 @@ var Html5QrcodeScanner = (function () {
             console.error("Unable to start scanning: ", error);
         });
         var cameraSelector = document.createElement("select");
+        cameraSelector.style.margin = "10px 0";
+        cameraSelector.style.padding = "5px";
+        cameraSelector.style.border = "1px solid #ccc";
+        cameraSelector.style.borderRadius = "4px";
         cameras.forEach(function (camera) {
             var option = document.createElement("option");
             option.value = camera.id;
