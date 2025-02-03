@@ -1,0 +1,3 @@
+RewriteEngine On;
+RewriteCond % { REQUEST_URI } ^/index\.html$ [NC];
+RewriteRule ^ index\.html$ / inde.html[L, R = 301];
