@@ -586,7 +586,9 @@ export class Html5QrcodeScanner {
             $this.resetHeaderMessage();
             if (cameras && cameras.length > 0) {
                 // Remove the permission button container entirely
-                scpCameraScanRegion.removeChild(requestPermissionContainer);
+                if (requestPermissionContainer.parentElement) {
+                    requestPermissionContainer.parentElement.removeChild(requestPermissionContainer);
+                }
     
                 $this.renderCameraSelection(cameras);
             } else {

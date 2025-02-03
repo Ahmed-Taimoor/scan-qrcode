@@ -251,7 +251,9 @@ export class Html5QrcodeScanner {
             $this.showHideScanTypeSwapLink(true);
             $this.resetHeaderMessage();
             if (cameras && cameras.length > 0) {
-                scpCameraScanRegion.removeChild(requestPermissionContainer);
+                if (requestPermissionContainer.parentElement) {
+                    requestPermissionContainer.parentElement.removeChild(requestPermissionContainer);
+                }
                 $this.renderCameraSelection(cameras);
             }
             else {
