@@ -26,6 +26,7 @@ export declare class Html5QrcodeScanner {
     private fileSelectionUi;
     constructor(elementId: string, config: Html5QrcodeScannerConfig | undefined, verbose: boolean | undefined);
     render(qrCodeSuccessCallback: QrcodeSuccessCallback, qrCodeErrorCallback: QrcodeErrorCallback | undefined): void;
+    private startCameraScan;
     pause(shouldPauseVideo?: boolean): void;
     resume(): void;
     getState(): Html5QrcodeScannerState;
@@ -52,7 +53,6 @@ export declare class Html5QrcodeScanner {
     private setHeaderMessage;
     private showHideScanTypeSwapLink;
     private insertCameraScanImageToScanRegion;
-    private insertFileScanImageToScanRegion;
     private clearScanRegion;
     private getDashboardSectionId;
     private getDashboardSectionCameraScanRegionId;
