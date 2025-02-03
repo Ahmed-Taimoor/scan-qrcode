@@ -570,14 +570,14 @@ export class Html5QrcodeScanner {
         $this.showHideScanTypeSwapLink(false);
         $this.setHeaderMessage(
             Html5QrcodeScannerStrings.cameraPermissionRequesting());
-
+    
         const createPermissionButtonIfNotExists = () => {
             if (!requestPermissionButton) {
                 $this.createPermissionButton(
                     scpCameraScanRegion, requestPermissionContainer);
             }
         }
-
+    
         Html5Qrcode.getCameras().then((cameras) => {
             // By this point the user has granted camera permissions.
             $this.persistedDataManager.setHasPermission(
@@ -585,7 +585,11 @@ export class Html5QrcodeScanner {
             $this.showHideScanTypeSwapLink(true);
             $this.resetHeaderMessage();
             if (cameras && cameras.length > 0) {
-                scpCameraScanRegion.removeChild(requestPermissionContainer);
+                // Hide or remove the permission button container
+                requestPermissionContainer.style.display = "none"; // Hide the container
+                // Alternatively, you can remove it entirely:
+                // scpCameraScanRegion.removeChild(requestPermissionContainer);
+    
                 $this.renderCameraSelection(cameras);
             } else {
                 $this.setHeaderMessage(
@@ -600,12 +604,6 @@ export class Html5QrcodeScanner {
             if (requestPermissionButton) {
                 requestPermissionButton.disabled = false;
             } else {
-                // Case when the permission button generation was skipped
-                // likely due to persistedDataManager indicated permissions
-                // exists.
-                // This should ideally never happen, but if it so happened that
-                // the camera retrieval failed, we want to create button this
-                // time.
                 createPermissionButtonIfNotExists();
             }
             $this.setHeaderMessage(
@@ -725,56 +723,64 @@ export class Html5QrcodeScanner {
     }
 
     private renderCameraSelection(cameras: Array<CameraDevice>) {
-    const $this = this;
-    const scpCameraScanRegion = document.getElementById(
-        this.getDashboardSectionCameraScanRegionId())!;
-    scpCameraScanRegion.style.textAlign = "center";
-
-    // Find the rear camera
-    const rearCamera = cameras.find(camera =>
-        camera.label.toLowerCase().includes("back") ||
-        camera.label.toLowerCase().includes("rear")
-    );
-
-    const cameraId = rearCamera ? rearCamera.id : cameras[0].id; // Fallback to the first camera
-
-    // Automatically start scanning with the selected camera
-    $this.html5Qrcode!.start(
-        cameraId,
-        toHtml5QrcodeCameraScanConfig($this.config),
-        $this.qrCodeSuccessCallback!,
-        $this.qrCodeErrorCallback!
-    ).catch((error) => {
-        console.error("Unable to start scanning: ", error);
-    });
-
-    // Add a dropdown to switch cameras
-    const cameraSelector = document.createElement("select");
-    cameras.forEach(camera => {
-        const option = document.createElement("option");
-        option.value = camera.id;
-        option.text = camera.label;
-        cameraSelector.appendChild(option);
-    });
-
-    cameraSelector.onchange = (event) => {
-        $this.html5Qrcode!.stop().then(() => {
-            const target = event.target as HTMLSelectElement;
-            if (target) {
-                const selectedCameraId = target.value;
-            $this.html5Qrcode!.start(
-                selectedCameraId,
-                toHtml5QrcodeCameraScanConfig($this.config),
-                $this.qrCodeSuccessCallback!,
-                $this.qrCodeErrorCallback!
-            );
-        }}).catch((error) => {
-            console.error("Unable to switch cameras: ", error);
+        const $this = this;
+        const scpCameraScanRegion = document.getElementById(
+            this.getDashboardSectionCameraScanRegionId())!;
+        scpCameraScanRegion.style.textAlign = "center";
+    
+        // Find the rear camera
+        const rearCamera = cameras.find(camera =>
+            camera.label.toLowerCase().includes("back") ||
+            camera.label.toLowerCase().includes("rear")
+        );
+    
+        // If no rear camera is found, fallback to the first camera
+        const cameraId = rearCamera ? rearCamera.id : cameras[0].id;
+    
+        // Automatically start scanning with the selected camera
+        $this.html5Qrcode!.start(
+            cameraId,
+            toHtml5QrcodeCameraScanConfig($this.config),
+            $this.qrCodeSuccessCallback!,
+            $this.qrCodeErrorCallback!
+        ).catch((error) => {
+            console.error("Unable to start scanning: ", error);
         });
-    };
-
-    scpCameraScanRegion.appendChild(cameraSelector);
-}
+    
+        // Add a dropdown to switch cameras
+        const cameraSelector = document.createElement("select");
+        cameras.forEach(camera => {
+            const option = document.createElement("option");
+            option.value = camera.id;
+            option.text = camera.label;
+            if (camera.id === cameraId) {
+                option.selected = true; // Select the rear or first camera by default
+            }
+            cameraSelector.appendChild(option);
+        });
+    
+        cameraSelector.onchange = (event) => {
+            const target = event.target as HTMLSelectElement | null;
+            if (!target) {
+                console.error("Event target is null");
+                return;
+            }
+    
+            const selectedCameraId = target.value;
+            $this.html5Qrcode!.stop().then(() => {
+                $this.html5Qrcode!.start(
+                    selectedCameraId,
+                    toHtml5QrcodeCameraScanConfig($this.config),
+                    $this.qrCodeSuccessCallback!,
+                    $this.qrCodeErrorCallback!
+                );
+            }).catch((error) => {
+                console.error("Unable to switch cameras: ", error);
+            });
+        };
+    
+        scpCameraScanRegion.appendChild(cameraSelector);
+    }
 
     private createSectionSwap() {
         const $this = this;

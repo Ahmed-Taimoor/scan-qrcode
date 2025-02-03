@@ -256,7 +256,7 @@ var Html5QrcodeScanner = (function () {
             $this.showHideScanTypeSwapLink(true);
             $this.resetHeaderMessage();
             if (cameras && cameras.length > 0) {
-                scpCameraScanRegion.removeChild(requestPermissionContainer);
+                requestPermissionContainer.style.display = "none";
                 $this.renderCameraSelection(cameras);
             }
             else {
@@ -360,15 +360,20 @@ var Html5QrcodeScanner = (function () {
             var option = document.createElement("option");
             option.value = camera.id;
             option.text = camera.label;
+            if (camera.id === cameraId) {
+                option.selected = true;
+            }
             cameraSelector.appendChild(option);
         });
         cameraSelector.onchange = function (event) {
+            var target = event.target;
+            if (!target) {
+                console.error("Event target is null");
+                return;
+            }
+            var selectedCameraId = target.value;
             $this.html5Qrcode.stop().then(function () {
-                var target = event.target;
-                if (target) {
-                    var selectedCameraId = target.value;
-                    $this.html5Qrcode.start(selectedCameraId, toHtml5QrcodeCameraScanConfig($this.config), $this.qrCodeSuccessCallback, $this.qrCodeErrorCallback);
-                }
+                $this.html5Qrcode.start(selectedCameraId, toHtml5QrcodeCameraScanConfig($this.config), $this.qrCodeSuccessCallback, $this.qrCodeErrorCallback);
             }).catch(function (error) {
                 console.error("Unable to switch cameras: ", error);
             });
