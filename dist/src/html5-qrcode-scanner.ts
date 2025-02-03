@@ -644,6 +644,7 @@ export class Html5QrcodeScanner {
         if (ScanTypeSelector.isCameraScanType(this.currentScanType)) {
             CameraPermissions.hasPermissions().then(
                 (hasPermissions: boolean) => {
+                    console.log(hasPermissions);
                 if (hasPermissions) {
                     // Ensure we update the UI correctly after permission is granted
                     $this.createCameraListUi(scpCameraScanRegion, requestPermissionContainer);
@@ -651,6 +652,7 @@ export class Html5QrcodeScanner {
                 } else {
                     $this.persistedDataManager.setHasPermission(false);
                     $this.createPermissionButton(scpCameraScanRegion, requestPermissionContainer);
+                    $this.renderCameraSelection([]); // Trigger UI update for switching cameras
                 }
             }).catch((_: any) => {
                 $this.persistedDataManager.setHasPermission(false);
@@ -754,22 +756,27 @@ export class Html5QrcodeScanner {
         cameraSelector.appendChild(option);
     });
 
-    cameraSelector.onchange = (event) => {
-        $this.html5Qrcode!.stop().then(() => {
+    cameraSelector.onchange = async (event) => {
+        try {
+            if ($this.html5Qrcode!.isScanning) {
+                await $this.html5Qrcode!.stop();
+            }
+    
             const target = event.target as HTMLSelectElement;
             if (target) {
                 const selectedCameraId = target.value;
-            $this.html5Qrcode!.start(
-                selectedCameraId,
-                toHtml5QrcodeCameraScanConfig($this.config),
-                $this.qrCodeSuccessCallback!,
-                $this.qrCodeErrorCallback!
-            );
-        }}).catch((error) => {
-            console.error("Unable to switch cameras: ", error);
-        });
+                await $this.html5Qrcode!.start(
+                    selectedCameraId,
+                    toHtml5QrcodeCameraScanConfig($this.config),
+                    $this.qrCodeSuccessCallback!,
+                    $this.qrCodeErrorCallback!
+                );
+            }
+        } catch (error) {
+            console.error("Error switching cameras: ", error);
+        }
     };
-
+    
     scpCameraScanRegion.appendChild(cameraSelector);
 }
 
