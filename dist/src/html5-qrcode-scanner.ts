@@ -641,26 +641,27 @@ export class Html5QrcodeScanner {
 
         // Only render last selected camera by default if the default scant type
         // is camera.
-        if (ScanTypeSelector.isCameraScanType(this.currentScanType)) {
+        if (ScanTypeSelector.isCameraScanType(this.currentScanType)
+            && this.persistedDataManager.hasCameraPermissions()) {
             CameraPermissions.hasPermissions().then(
                 (hasPermissions: boolean) => {
-                    console.log(hasPermissions);
                 if (hasPermissions) {
-                    // Ensure we update the UI correctly after permission is granted
-                    $this.createCameraListUi(scpCameraScanRegion, requestPermissionContainer);
-                    $this.renderCameraSelection([]); // Trigger UI update for switching cameras
+                    $this.createCameraListUi(
+                        scpCameraScanRegion, requestPermissionContainer);
                 } else {
-                    $this.persistedDataManager.setHasPermission(false);
-                    $this.createPermissionButton(scpCameraScanRegion, requestPermissionContainer);
-                    $this.renderCameraSelection([]); // Trigger UI update for switching cameras
+                    $this.persistedDataManager.setHasPermission(
+                        /* hasPermission */ false);
+                    $this.createPermissionButton(
+                        scpCameraScanRegion, requestPermissionContainer);
                 }
             }).catch((_: any) => {
-                $this.persistedDataManager.setHasPermission(false);
-                $this.createPermissionButton(scpCameraScanRegion, requestPermissionContainer);
+                $this.persistedDataManager.setHasPermission(
+                    /* hasPermission */ false);
+                $this.createPermissionButton(
+                    scpCameraScanRegion, requestPermissionContainer);
             });
             return;
         }
-        
 
         this.createPermissionButton(
             scpCameraScanRegion, requestPermissionContainer);
@@ -756,27 +757,22 @@ export class Html5QrcodeScanner {
         cameraSelector.appendChild(option);
     });
 
-    cameraSelector.onchange = async (event) => {
-        try {
-            if ($this.html5Qrcode!.isScanning) {
-                await $this.html5Qrcode!.stop();
-            }
-    
+    cameraSelector.onchange = (event) => {
+        $this.html5Qrcode!.stop().then(() => {
             const target = event.target as HTMLSelectElement;
             if (target) {
                 const selectedCameraId = target.value;
-                await $this.html5Qrcode!.start(
-                    selectedCameraId,
-                    toHtml5QrcodeCameraScanConfig($this.config),
-                    $this.qrCodeSuccessCallback!,
-                    $this.qrCodeErrorCallback!
-                );
-            }
-        } catch (error) {
-            console.error("Error switching cameras: ", error);
-        }
+            $this.html5Qrcode!.start(
+                selectedCameraId,
+                toHtml5QrcodeCameraScanConfig($this.config),
+                $this.qrCodeSuccessCallback!,
+                $this.qrCodeErrorCallback!
+            );
+        }}).catch((error) => {
+            console.error("Unable to switch cameras: ", error);
+        });
     };
-    
+
     scpCameraScanRegion.appendChild(cameraSelector);
 }
 

@@ -1,12 +1,3 @@
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 import { Html5QrcodeConstants, Html5QrcodeScanType, Html5QrcodeErrorFactory, BaseLoggger, isNullOrUndefined, } from "./core";
 import { Html5Qrcode, } from "./html5-qrcode";
 import { Html5QrcodeScannerStrings, } from "./strings";
@@ -293,17 +284,15 @@ export class Html5QrcodeScanner {
     }
     createPermissionsUi(scpCameraScanRegion, requestPermissionContainer) {
         const $this = this;
-        if (ScanTypeSelector.isCameraScanType(this.currentScanType)) {
+        if (ScanTypeSelector.isCameraScanType(this.currentScanType)
+            && this.persistedDataManager.hasCameraPermissions()) {
             CameraPermissions.hasPermissions().then((hasPermissions) => {
-                console.log(hasPermissions);
                 if (hasPermissions) {
                     $this.createCameraListUi(scpCameraScanRegion, requestPermissionContainer);
-                    $this.renderCameraSelection([]);
                 }
                 else {
                     $this.persistedDataManager.setHasPermission(false);
                     $this.createPermissionButton(scpCameraScanRegion, requestPermissionContainer);
-                    $this.renderCameraSelection([]);
                 }
             }).catch((_) => {
                 $this.persistedDataManager.setHasPermission(false);
@@ -366,21 +355,17 @@ export class Html5QrcodeScanner {
             option.text = camera.label;
             cameraSelector.appendChild(option);
         });
-        cameraSelector.onchange = (event) => __awaiter(this, void 0, void 0, function* () {
-            try {
-                if ($this.html5Qrcode.isScanning) {
-                    yield $this.html5Qrcode.stop();
-                }
+        cameraSelector.onchange = (event) => {
+            $this.html5Qrcode.stop().then(() => {
                 const target = event.target;
                 if (target) {
                     const selectedCameraId = target.value;
-                    yield $this.html5Qrcode.start(selectedCameraId, toHtml5QrcodeCameraScanConfig($this.config), $this.qrCodeSuccessCallback, $this.qrCodeErrorCallback);
+                    $this.html5Qrcode.start(selectedCameraId, toHtml5QrcodeCameraScanConfig($this.config), $this.qrCodeSuccessCallback, $this.qrCodeErrorCallback);
                 }
-            }
-            catch (error) {
-                console.error("Error switching cameras: ", error);
-            }
-        });
+            }).catch((error) => {
+                console.error("Unable to switch cameras: ", error);
+            });
+        };
         scpCameraScanRegion.appendChild(cameraSelector);
     }
     createSectionSwap() {
