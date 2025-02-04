@@ -484,29 +484,31 @@ export class Html5QrcodeScanner {
         supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA] // Force camera scan only
     };
 }
-private createBasicLayout(parent: HTMLElement) {
-    parent.style.position = "relative";
-    parent.style.padding = "0px";
-    parent.style.border = "1px solid silver";
-    this.createHeader(parent);
+    private createBasicLayout(parent: HTMLElement) {
+        parent.style.position = "relative";
+        parent.style.padding = "0px";
+        parent.style.border = "1px solid silver";
+        this.createHeader(parent);
 
-    const qrCodeScanRegion = document.createElement("div");
-    const scanRegionId = this.getScanRegionId();
-    qrCodeScanRegion.id = scanRegionId;
-    qrCodeScanRegion.style.width = "100%";
-    qrCodeScanRegion.style.minHeight = "300px"; // Increased height
-    qrCodeScanRegion.style.textAlign = "center";
-    parent.appendChild(qrCodeScanRegion);
+        const qrCodeScanRegion = document.createElement("div");
+        const scanRegionId = this.getScanRegionId();
+        qrCodeScanRegion.id = scanRegionId;
+        qrCodeScanRegion.style.width = "100%";
+        qrCodeScanRegion.style.minHeight = "100px";
+        qrCodeScanRegion.style.textAlign = "center";
+        parent.appendChild(qrCodeScanRegion);
+        if (ScanTypeSelector.isCameraScanType(this.currentScanType)) {
+            this.insertCameraScanImageToScanRegion();
+        }
 
-    const qrCodeDashboard = document.createElement("div");
-    const dashboardId = this.getDashboardId();
-    qrCodeDashboard.id = dashboardId;
-    qrCodeDashboard.style.width = "100%";
-    parent.appendChild(qrCodeDashboard);
+        const qrCodeDashboard = document.createElement("div");
+        const dashboardId = this.getDashboardId();
+        qrCodeDashboard.id = dashboardId;
+        qrCodeDashboard.style.width = "100%";
+        parent.appendChild(qrCodeDashboard);
 
-    this.setupInitialDashboard(qrCodeDashboard);
-}
-
+        this.setupInitialDashboard(qrCodeDashboard);
+    }
 
     private resetBasicLayout(mainContainer: HTMLElement) {
         mainContainer.style.border = "none";
@@ -553,21 +555,32 @@ private createBasicLayout(parent: HTMLElement) {
         scpCameraScanRegion: HTMLDivElement,
         requestPermissionContainer: HTMLDivElement,
         requestPermissionButton?: HTMLButtonElement) {
+        
+        // Prevent multiple calls if camera list UI is already being created
+        if (this.isTransitioning) {
+            return;
+        }
+        
         const $this = this;
         $this.showHideScanTypeSwapLink(false);
         $this.setHeaderMessage(
             Html5QrcodeScannerStrings.cameraPermissionRequesting());
     
+        // Clear any existing camera selection UI first
+        scpCameraScanRegion.innerHTML = '';
+        
         Html5Qrcode.getCameras().then((cameras) => {
             $this.persistedDataManager.setHasPermission(true);
             $this.showHideScanTypeSwapLink(true);
             $this.resetHeaderMessage();
-    
+            
             if (cameras && cameras.length > 0) {
-                // Ensure the container exists in the DOM before trying to remove it
-                if (requestPermissionContainer && requestPermissionContainer.parentElement) {
-                    requestPermissionContainer.parentElement.removeChild(requestPermissionContainer);
+                // Remove the permission container if it exists
+                if (requestPermissionContainer.parentElement) {
+                    requestPermissionContainer.parentElement.removeChild(
+                        requestPermissionContainer);
                 }
+                
                 $this.renderCameraSelection(cameras);
             } else {
                 $this.setHeaderMessage(
@@ -590,7 +603,6 @@ private createBasicLayout(parent: HTMLElement) {
             $this.showHideScanTypeSwapLink(true);
         });
     }
-
 
 
     private createPermissionButton(
@@ -650,6 +662,13 @@ private createBasicLayout(parent: HTMLElement) {
 
     private createSectionControlPanel() {
         const section = document.getElementById(this.getDashboardSectionId())!;
+        
+        // Clear any existing control panel first
+        const existingControlPanel = section.querySelector('div');
+        if (existingControlPanel) {
+            section.removeChild(existingControlPanel);
+        }
+        
         const sectionControlPanel = document.createElement("div");
         section.appendChild(sectionControlPanel);
     
@@ -658,13 +677,12 @@ private createBasicLayout(parent: HTMLElement) {
         scpCameraScanRegion.style.display = "block";
         sectionControlPanel.appendChild(scpCameraScanRegion);
     
-        // Create the requestPermissionContainer and immediately append it
+        // Create the requestPermissionContainer
         const requestPermissionContainer = document.createElement("div");
         requestPermissionContainer.style.textAlign = "center";
         requestPermissionContainer.id = `${this.elementId}__permission_container`;
-        scpCameraScanRegion.appendChild(requestPermissionContainer);
-    
-        // Initialize permissions UI with the properly attached container
+        
+        // Initialize permissions UI
         this.createPermissionsUi(scpCameraScanRegion, requestPermissionContainer);
     }
 
@@ -713,10 +731,17 @@ private createBasicLayout(parent: HTMLElement) {
     
 
     private async renderCameraSelection(cameras: Array<CameraDevice>) {
-        const $this = this;
         const scpCameraScanRegion = document.getElementById(
             this.getDashboardSectionCameraScanRegionId())!;
+            
+        // Clear existing content
+        scpCameraScanRegion.innerHTML = '';
         scpCameraScanRegion.style.textAlign = "center";
+    
+        // Check if camera selection UI already exists
+        if (document.getElementById(PublicUiElementIdAndClasses.CAMERA_SELECTION_SELECT_ID)) {
+            return; // Exit if camera selection already exists
+        }
     
         // Find rear camera (environment-facing)
         let rearCamera: CameraDevice | undefined;
@@ -728,29 +753,27 @@ private createBasicLayout(parent: HTMLElement) {
             }
         }
     
-        const defaultCamera = rearCamera || cameras[0]; // Use rear camera if available, else first camera
+        const defaultCamera = rearCamera || cameras[0];
     
-       // Create camera selection UI
-    let cameraSelectUi: CameraSelectionUi = CameraSelectionUi.create(
-        scpCameraScanRegion, cameras);
-
-    // Auto-select rear camera or first camera
-    if (defaultCamera) {
-        cameraSelectUi.setValue(defaultCamera.id);
-        this.startCameraScanning(defaultCamera.id); // Automatically start scanning
+        // Create camera selection UI only once
+        let cameraSelectUi: CameraSelectionUi = CameraSelectionUi.create(
+            scpCameraScanRegion, cameras);
+    
+        if (defaultCamera) {
+            cameraSelectUi.setValue(defaultCamera.id);
+            this.startCameraScanning(defaultCamera.id);
+        }
+    
+        // Add event listener only once
+        const cameraSelectElement = document.getElementById(
+            PublicUiElementIdAndClasses.CAMERA_SELECTION_SELECT_ID);
+        if (cameraSelectElement) {
+            cameraSelectElement.addEventListener('change', (event) => {
+                const selectedCameraId = (event.target as HTMLSelectElement).value;
+                this.startCameraScanning(selectedCameraId);
+            });
+        }
     }
-
-    // Add camera switching dropdown
-    const cameraSelectElement = document.getElementById(
-        PublicUiElementIdAndClasses.CAMERA_SELECTION_SELECT_ID);
-    if (cameraSelectElement) {
-        cameraSelectElement.addEventListener('change', (event) => {
-            const selectedCameraId = (event.target as HTMLSelectElement).value;
-            this.startCameraScanning(selectedCameraId); // Switch camera and restart scanning
-        });
-    }
-    }
-
     // Start camera scanning automatically when swapping to camera based scan
     // if set in config and has permission.
     private startCameraScanIfPermissionExistsOnSwap() {

@@ -205,9 +205,12 @@ export class Html5QrcodeScanner {
         const scanRegionId = this.getScanRegionId();
         qrCodeScanRegion.id = scanRegionId;
         qrCodeScanRegion.style.width = "100%";
-        qrCodeScanRegion.style.minHeight = "300px";
+        qrCodeScanRegion.style.minHeight = "100px";
         qrCodeScanRegion.style.textAlign = "center";
         parent.appendChild(qrCodeScanRegion);
+        if (ScanTypeSelector.isCameraScanType(this.currentScanType)) {
+            this.insertCameraScanImageToScanRegion();
+        }
         const qrCodeDashboard = document.createElement("div");
         const dashboardId = this.getDashboardId();
         qrCodeDashboard.id = dashboardId;
@@ -248,15 +251,19 @@ export class Html5QrcodeScanner {
         dashboard.appendChild(section);
     }
     createCameraListUi(scpCameraScanRegion, requestPermissionContainer, requestPermissionButton) {
+        if (this.isTransitioning) {
+            return;
+        }
         const $this = this;
         $this.showHideScanTypeSwapLink(false);
         $this.setHeaderMessage(Html5QrcodeScannerStrings.cameraPermissionRequesting());
+        scpCameraScanRegion.innerHTML = '';
         Html5Qrcode.getCameras().then((cameras) => {
             $this.persistedDataManager.setHasPermission(true);
             $this.showHideScanTypeSwapLink(true);
             $this.resetHeaderMessage();
             if (cameras && cameras.length > 0) {
-                if (requestPermissionContainer && requestPermissionContainer.parentElement) {
+                if (requestPermissionContainer.parentElement) {
                     requestPermissionContainer.parentElement.removeChild(requestPermissionContainer);
                 }
                 $this.renderCameraSelection(cameras);
@@ -316,6 +323,10 @@ export class Html5QrcodeScanner {
     }
     createSectionControlPanel() {
         const section = document.getElementById(this.getDashboardSectionId());
+        const existingControlPanel = section.querySelector('div');
+        if (existingControlPanel) {
+            section.removeChild(existingControlPanel);
+        }
         const sectionControlPanel = document.createElement("div");
         section.appendChild(sectionControlPanel);
         const scpCameraScanRegion = document.createElement("div");
@@ -325,7 +336,6 @@ export class Html5QrcodeScanner {
         const requestPermissionContainer = document.createElement("div");
         requestPermissionContainer.style.textAlign = "center";
         requestPermissionContainer.id = `${this.elementId}__permission_container`;
-        scpCameraScanRegion.appendChild(requestPermissionContainer);
         this.createPermissionsUi(scpCameraScanRegion, requestPermissionContainer);
     }
     startCameraScanning(cameraId) {
@@ -362,9 +372,12 @@ export class Html5QrcodeScanner {
     }
     renderCameraSelection(cameras) {
         return __awaiter(this, void 0, void 0, function* () {
-            const $this = this;
             const scpCameraScanRegion = document.getElementById(this.getDashboardSectionCameraScanRegionId());
+            scpCameraScanRegion.innerHTML = '';
             scpCameraScanRegion.style.textAlign = "center";
+            if (document.getElementById(PublicUiElementIdAndClasses.CAMERA_SELECTION_SELECT_ID)) {
+                return;
+            }
             let rearCamera;
             for (const camera of cameras) {
                 const facingMode = yield this.getCameraFacingMode(camera.id);

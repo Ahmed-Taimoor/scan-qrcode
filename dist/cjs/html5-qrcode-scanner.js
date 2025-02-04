@@ -245,9 +245,12 @@ var Html5QrcodeScanner = (function () {
         var scanRegionId = this.getScanRegionId();
         qrCodeScanRegion.id = scanRegionId;
         qrCodeScanRegion.style.width = "100%";
-        qrCodeScanRegion.style.minHeight = "300px";
+        qrCodeScanRegion.style.minHeight = "100px";
         qrCodeScanRegion.style.textAlign = "center";
         parent.appendChild(qrCodeScanRegion);
+        if (scan_type_selector_1.ScanTypeSelector.isCameraScanType(this.currentScanType)) {
+            this.insertCameraScanImageToScanRegion();
+        }
         var qrCodeDashboard = document.createElement("div");
         var dashboardId = this.getDashboardId();
         qrCodeDashboard.id = dashboardId;
@@ -288,15 +291,19 @@ var Html5QrcodeScanner = (function () {
         dashboard.appendChild(section);
     };
     Html5QrcodeScanner.prototype.createCameraListUi = function (scpCameraScanRegion, requestPermissionContainer, requestPermissionButton) {
+        if (this.isTransitioning) {
+            return;
+        }
         var $this = this;
         $this.showHideScanTypeSwapLink(false);
         $this.setHeaderMessage(strings_1.Html5QrcodeScannerStrings.cameraPermissionRequesting());
+        scpCameraScanRegion.innerHTML = '';
         html5_qrcode_1.Html5Qrcode.getCameras().then(function (cameras) {
             $this.persistedDataManager.setHasPermission(true);
             $this.showHideScanTypeSwapLink(true);
             $this.resetHeaderMessage();
             if (cameras && cameras.length > 0) {
-                if (requestPermissionContainer && requestPermissionContainer.parentElement) {
+                if (requestPermissionContainer.parentElement) {
                     requestPermissionContainer.parentElement.removeChild(requestPermissionContainer);
                 }
                 $this.renderCameraSelection(cameras);
@@ -356,6 +363,10 @@ var Html5QrcodeScanner = (function () {
     };
     Html5QrcodeScanner.prototype.createSectionControlPanel = function () {
         var section = document.getElementById(this.getDashboardSectionId());
+        var existingControlPanel = section.querySelector('div');
+        if (existingControlPanel) {
+            section.removeChild(existingControlPanel);
+        }
         var sectionControlPanel = document.createElement("div");
         section.appendChild(sectionControlPanel);
         var scpCameraScanRegion = document.createElement("div");
@@ -365,7 +376,6 @@ var Html5QrcodeScanner = (function () {
         var requestPermissionContainer = document.createElement("div");
         requestPermissionContainer.style.textAlign = "center";
         requestPermissionContainer.id = "".concat(this.elementId, "__permission_container");
-        scpCameraScanRegion.appendChild(requestPermissionContainer);
         this.createPermissionsUi(scpCameraScanRegion, requestPermissionContainer);
     };
     Html5QrcodeScanner.prototype.startCameraScanning = function (cameraId) {
@@ -420,14 +430,17 @@ var Html5QrcodeScanner = (function () {
     };
     Html5QrcodeScanner.prototype.renderCameraSelection = function (cameras) {
         return __awaiter(this, void 0, void 0, function () {
-            var $this, scpCameraScanRegion, rearCamera, _i, cameras_1, camera, facingMode, defaultCamera, cameraSelectUi, cameraSelectElement;
+            var scpCameraScanRegion, rearCamera, _i, cameras_1, camera, facingMode, defaultCamera, cameraSelectUi, cameraSelectElement;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        $this = this;
                         scpCameraScanRegion = document.getElementById(this.getDashboardSectionCameraScanRegionId());
+                        scpCameraScanRegion.innerHTML = '';
                         scpCameraScanRegion.style.textAlign = "center";
+                        if (document.getElementById(base_1.PublicUiElementIdAndClasses.CAMERA_SELECTION_SELECT_ID)) {
+                            return [2];
+                        }
                         _i = 0, cameras_1 = cameras;
                         _a.label = 1;
                     case 1:
