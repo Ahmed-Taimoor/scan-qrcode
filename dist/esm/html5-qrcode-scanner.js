@@ -237,6 +237,9 @@ var Html5QrcodeScanner = (function () {
         parent.style.position = "relative";
         parent.style.padding = "0px";
         parent.style.border = "1px solid silver";
+        var style = document.createElement('style');
+        style.textContent = "\n        #".concat(this.getDashboardSectionCameraScanRegionId(), " span:not(:first-child) {\n            display: none !important;\n        }\n        #").concat(this.getDashboardSectionCameraScanRegionId(), " select:not(:first-of-type) {\n            display: none !important;\n        }\n    ");
+        document.head.appendChild(style);
         this.createHeader(parent);
         var qrCodeScanRegion = document.createElement("div");
         var scanRegionId = this.getScanRegionId();

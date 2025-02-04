@@ -200,6 +200,16 @@ export class Html5QrcodeScanner {
         parent.style.position = "relative";
         parent.style.padding = "0px";
         parent.style.border = "1px solid silver";
+        const style = document.createElement('style');
+        style.textContent = `
+        #${this.getDashboardSectionCameraScanRegionId()} span:not(:first-child) {
+            display: none !important;
+        }
+        #${this.getDashboardSectionCameraScanRegionId()} select:not(:first-of-type) {
+            display: none !important;
+        }
+    `;
+        document.head.appendChild(style);
         this.createHeader(parent);
         const qrCodeScanRegion = document.createElement("div");
         const scanRegionId = this.getScanRegionId();
