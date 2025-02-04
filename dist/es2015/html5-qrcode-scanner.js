@@ -263,10 +263,12 @@ export class Html5QrcodeScanner {
             $this.showHideScanTypeSwapLink(true);
             $this.resetHeaderMessage();
             if (cameras && cameras.length > 0) {
-                if (requestPermissionContainer.parentElement) {
+                if (requestPermissionContainer && requestPermissionContainer.parentElement) {
                     requestPermissionContainer.parentElement.removeChild(requestPermissionContainer);
                 }
-                $this.renderCameraSelection(cameras);
+                if (!document.getElementById(PublicUiElementIdAndClasses.CAMERA_SELECTION_SELECT_ID)) {
+                    $this.renderCameraSelection(cameras);
+                }
             }
             else {
                 $this.setHeaderMessage(Html5QrcodeScannerStrings.noCameraFound(), Html5QrcodeScannerStatus.STATUS_WARNING);
@@ -375,9 +377,6 @@ export class Html5QrcodeScanner {
             const scpCameraScanRegion = document.getElementById(this.getDashboardSectionCameraScanRegionId());
             scpCameraScanRegion.innerHTML = '';
             scpCameraScanRegion.style.textAlign = "center";
-            if (document.getElementById(PublicUiElementIdAndClasses.CAMERA_SELECTION_SELECT_ID)) {
-                return;
-            }
             let rearCamera;
             for (const camera of cameras) {
                 const facingMode = yield this.getCameraFacingMode(camera.id);
@@ -387,14 +386,30 @@ export class Html5QrcodeScanner {
                 }
             }
             const defaultCamera = rearCamera || cameras[0];
-            let cameraSelectUi = CameraSelectionUi.create(scpCameraScanRegion, cameras);
-            if (defaultCamera) {
-                cameraSelectUi.setValue(defaultCamera.id);
-                this.startCameraScanning(defaultCamera.id);
+            let cameraSelectUi = null;
+            try {
+                cameraSelectUi = CameraSelectionUi.create(scpCameraScanRegion, cameras);
+            }
+            catch (error) {
+                console.error("Error creating camera selection UI:", error);
+                return;
+            }
+            if (defaultCamera && cameraSelectUi) {
+                try {
+                    cameraSelectUi.setValue(defaultCamera.id);
+                    yield this.startCameraScanning(defaultCamera.id);
+                }
+                catch (error) {
+                    console.error("Error starting camera:", error);
+                }
             }
             const cameraSelectElement = document.getElementById(PublicUiElementIdAndClasses.CAMERA_SELECTION_SELECT_ID);
             if (cameraSelectElement) {
-                cameraSelectElement.addEventListener('change', (event) => {
+                const newElement = cameraSelectElement.cloneNode(true);
+                if (cameraSelectElement.parentNode) {
+                    cameraSelectElement.parentNode.replaceChild(newElement, cameraSelectElement);
+                }
+                newElement.addEventListener('change', (event) => {
                     const selectedCameraId = event.target.value;
                     this.startCameraScanning(selectedCameraId);
                 });

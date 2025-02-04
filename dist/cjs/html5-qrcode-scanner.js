@@ -303,10 +303,12 @@ var Html5QrcodeScanner = (function () {
             $this.showHideScanTypeSwapLink(true);
             $this.resetHeaderMessage();
             if (cameras && cameras.length > 0) {
-                if (requestPermissionContainer.parentElement) {
+                if (requestPermissionContainer && requestPermissionContainer.parentElement) {
                     requestPermissionContainer.parentElement.removeChild(requestPermissionContainer);
                 }
-                $this.renderCameraSelection(cameras);
+                if (!document.getElementById(base_1.PublicUiElementIdAndClasses.CAMERA_SELECTION_SELECT_ID)) {
+                    $this.renderCameraSelection(cameras);
+                }
             }
             else {
                 $this.setHeaderMessage(strings_1.Html5QrcodeScannerStrings.noCameraFound(), Html5QrcodeScannerStatus.STATUS_WARNING);
@@ -430,7 +432,7 @@ var Html5QrcodeScanner = (function () {
     };
     Html5QrcodeScanner.prototype.renderCameraSelection = function (cameras) {
         return __awaiter(this, void 0, void 0, function () {
-            var scpCameraScanRegion, rearCamera, _i, cameras_1, camera, facingMode, defaultCamera, cameraSelectUi, cameraSelectElement;
+            var scpCameraScanRegion, rearCamera, _i, cameras_1, camera, facingMode, defaultCamera, cameraSelectUi, error_3, cameraSelectElement, newElement;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -438,9 +440,6 @@ var Html5QrcodeScanner = (function () {
                         scpCameraScanRegion = document.getElementById(this.getDashboardSectionCameraScanRegionId());
                         scpCameraScanRegion.innerHTML = '';
                         scpCameraScanRegion.style.textAlign = "center";
-                        if (document.getElementById(base_1.PublicUiElementIdAndClasses.CAMERA_SELECTION_SELECT_ID)) {
-                            return [2];
-                        }
                         _i = 0, cameras_1 = cameras;
                         _a.label = 1;
                     case 1:
@@ -459,14 +458,35 @@ var Html5QrcodeScanner = (function () {
                         return [3, 1];
                     case 4:
                         defaultCamera = rearCamera || cameras[0];
-                        cameraSelectUi = camera_selection_ui_1.CameraSelectionUi.create(scpCameraScanRegion, cameras);
-                        if (defaultCamera) {
-                            cameraSelectUi.setValue(defaultCamera.id);
-                            this.startCameraScanning(defaultCamera.id);
+                        cameraSelectUi = null;
+                        try {
+                            cameraSelectUi = camera_selection_ui_1.CameraSelectionUi.create(scpCameraScanRegion, cameras);
                         }
+                        catch (error) {
+                            console.error("Error creating camera selection UI:", error);
+                            return [2];
+                        }
+                        if (!(defaultCamera && cameraSelectUi)) return [3, 8];
+                        _a.label = 5;
+                    case 5:
+                        _a.trys.push([5, 7, , 8]);
+                        cameraSelectUi.setValue(defaultCamera.id);
+                        return [4, this.startCameraScanning(defaultCamera.id)];
+                    case 6:
+                        _a.sent();
+                        return [3, 8];
+                    case 7:
+                        error_3 = _a.sent();
+                        console.error("Error starting camera:", error_3);
+                        return [3, 8];
+                    case 8:
                         cameraSelectElement = document.getElementById(base_1.PublicUiElementIdAndClasses.CAMERA_SELECTION_SELECT_ID);
                         if (cameraSelectElement) {
-                            cameraSelectElement.addEventListener('change', function (event) {
+                            newElement = cameraSelectElement.cloneNode(true);
+                            if (cameraSelectElement.parentNode) {
+                                cameraSelectElement.parentNode.replaceChild(newElement, cameraSelectElement);
+                            }
+                            newElement.addEventListener('change', function (event) {
                                 var selectedCameraId = event.target.value;
                                 _this.startCameraScanning(selectedCameraId);
                             });

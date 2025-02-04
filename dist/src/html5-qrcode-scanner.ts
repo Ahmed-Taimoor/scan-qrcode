@@ -550,7 +550,6 @@ export class Html5QrcodeScanner {
         section.style.textAlign = "left";
         dashboard.appendChild(section);
     }
-
     private createCameraListUi(
         scpCameraScanRegion: HTMLDivElement,
         requestPermissionContainer: HTMLDivElement,
@@ -576,12 +575,15 @@ export class Html5QrcodeScanner {
             
             if (cameras && cameras.length > 0) {
                 // Remove the permission container if it exists
-                if (requestPermissionContainer.parentElement) {
+                if (requestPermissionContainer && requestPermissionContainer.parentElement) {
                     requestPermissionContainer.parentElement.removeChild(
                         requestPermissionContainer);
                 }
-                
-                $this.renderCameraSelection(cameras);
+    
+                // Only render if no camera UI exists
+                if (!document.getElementById(PublicUiElementIdAndClasses.CAMERA_SELECTION_SELECT_ID)) {
+                    $this.renderCameraSelection(cameras);
+                }
             } else {
                 $this.setHeaderMessage(
                     Html5QrcodeScannerStrings.noCameraFound(),
@@ -603,7 +605,7 @@ export class Html5QrcodeScanner {
             $this.showHideScanTypeSwapLink(true);
         });
     }
-
+    
 
     private createPermissionButton(
         scpCameraScanRegion: HTMLDivElement,
@@ -738,11 +740,6 @@ export class Html5QrcodeScanner {
         scpCameraScanRegion.innerHTML = '';
         scpCameraScanRegion.style.textAlign = "center";
     
-        // Check if camera selection UI already exists
-        if (document.getElementById(PublicUiElementIdAndClasses.CAMERA_SELECTION_SELECT_ID)) {
-            return; // Exit if camera selection already exists
-        }
-    
         // Find rear camera (environment-facing)
         let rearCamera: CameraDevice | undefined;
         for (const camera of cameras) {
@@ -755,20 +752,35 @@ export class Html5QrcodeScanner {
     
         const defaultCamera = rearCamera || cameras[0];
     
-        // Create camera selection UI only once
-        let cameraSelectUi: CameraSelectionUi = CameraSelectionUi.create(
-            scpCameraScanRegion, cameras);
-    
-        if (defaultCamera) {
-            cameraSelectUi.setValue(defaultCamera.id);
-            this.startCameraScanning(defaultCamera.id);
+        // Only create camera selection UI once
+        let cameraSelectUi: CameraSelectionUi | null = null;
+        try {
+            cameraSelectUi = CameraSelectionUi.create(scpCameraScanRegion, cameras);
+        } catch (error) {
+            console.error("Error creating camera selection UI:", error);
+            return;
         }
     
-        // Add event listener only once
+        if (defaultCamera && cameraSelectUi) {
+            try {
+                cameraSelectUi.setValue(defaultCamera.id);
+                await this.startCameraScanning(defaultCamera.id);
+            } catch (error) {
+                console.error("Error starting camera:", error);
+            }
+        }
+    
+        // Add event listener to the newly created select element
         const cameraSelectElement = document.getElementById(
             PublicUiElementIdAndClasses.CAMERA_SELECTION_SELECT_ID);
         if (cameraSelectElement) {
-            cameraSelectElement.addEventListener('change', (event) => {
+            // Ensure we don't add multiple listeners
+            const newElement = cameraSelectElement.cloneNode(true);
+            if (cameraSelectElement.parentNode) {
+                cameraSelectElement.parentNode.replaceChild(newElement, cameraSelectElement);
+            }
+            
+            newElement.addEventListener('change', (event) => {
                 const selectedCameraId = (event.target as HTMLSelectElement).value;
                 this.startCameraScanning(selectedCameraId);
             });
