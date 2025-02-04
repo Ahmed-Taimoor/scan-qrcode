@@ -754,70 +754,50 @@ private createBasicLayout(parent: HTMLElement) {
         scpCameraScanRegion.innerHTML = '';
         scpCameraScanRegion.style.textAlign = "center";
     
-        // On mobile, we'll try to start with the back camera automatically
-        let defaultCamera: CameraDevice | undefined;
-        
-        // First try to find a back-facing (environment) camera
+        // Find rear camera (environment-facing)
+        let rearCamera: CameraDevice | undefined;
         for (const camera of cameras) {
             const facingMode = await this.getCameraFacingMode(camera.id);
             if (facingMode === 'environment') {
-                defaultCamera = camera;
+                rearCamera = camera;
                 break;
             }
         }
     
-        // If no back camera found, use the first camera
-        if (!defaultCamera && cameras.length > 0) {
-            defaultCamera = cameras[0];
+        const defaultCamera = rearCamera || cameras[0];
+    
+        // Only create camera selection UI once
+        let cameraSelectUi: CameraSelectionUi | null = null;
+        try {
+            cameraSelectUi = CameraSelectionUi.create(scpCameraScanRegion, cameras);
+        } catch (error) {
+            console.error("Error creating camera selection UI:", error);
+            return;
         }
     
-        // For mobile devices, if we have exactly 2 cameras, we'll hide the selection UI
-        // and add a camera switch button instead
-        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-        if (isMobile && cameras.length === 2) {
-            const switchButton = document.createElement('button');
-            switchButton.className = 'html5-qrcode-element';
-            switchButton.style.cssText = `
-                margin: 8px;
-                padding: 8px 16px;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                background: white;
-                cursor: pointer;
-            `;
-            switchButton.textContent = '🔄 Switch Camera';
-    
-            let currentCameraIndex = cameras.indexOf(defaultCamera!);
-            switchButton.addEventListener('click', () => {
-                currentCameraIndex = (currentCameraIndex + 1) % cameras.length;
-                this.startCameraScanning(cameras[currentCameraIndex].id);
-            });
-    
-            scpCameraScanRegion.appendChild(switchButton);
-    
-            // Start with default camera
-            if (defaultCamera) {
-                this.startCameraScanning(defaultCamera.id);
-            }
-        } else {
-            // For non-mobile or when there's not exactly 2 cameras,
-            // use the regular camera selection UI
-            let cameraSelectUi = CameraSelectionUi.create(scpCameraScanRegion, cameras);
-    
-            if (defaultCamera) {
+        if (defaultCamera && cameraSelectUi) {
+            try {
                 cameraSelectUi.setValue(defaultCamera.id);
                 await this.startCameraScanning(defaultCamera.id);
+            } catch (error) {
+                console.error("Error starting camera:", error);
             }
+        }
     
-            // Add event listener
-            const cameraSelectElement = document.getElementById(
-                PublicUiElementIdAndClasses.CAMERA_SELECTION_SELECT_ID);
-            if (cameraSelectElement) {
-                cameraSelectElement.addEventListener('change', (event) => {
-                    const selectedCameraId = (event.target as HTMLSelectElement).value;
-                    this.startCameraScanning(selectedCameraId);
-                });
+        // Add event listener to the newly created select element
+        const cameraSelectElement = document.getElementById(
+            PublicUiElementIdAndClasses.CAMERA_SELECTION_SELECT_ID);
+        if (cameraSelectElement) {
+            // Ensure we don't add multiple listeners
+            const newElement = cameraSelectElement.cloneNode(true);
+            if (cameraSelectElement.parentNode) {
+                cameraSelectElement.parentNode.replaceChild(newElement, cameraSelectElement);
             }
+            
+            newElement.addEventListener('change', (event) => {
+                const selectedCameraId = (event.target as HTMLSelectElement).value;
+                this.startCameraScanning(selectedCameraId);
+            });
         }
     }
     // Start camera scanning automatically when swapping to camera based scan
