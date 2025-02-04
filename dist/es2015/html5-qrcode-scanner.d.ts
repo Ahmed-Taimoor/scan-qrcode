@@ -26,7 +26,8 @@ export declare class Html5QrcodeScanner {
     private fileSelectionUi;
     constructor(elementId: string, config: Html5QrcodeScannerConfig | undefined, verbose: boolean | undefined);
     render(qrCodeSuccessCallback: QrcodeSuccessCallback, qrCodeErrorCallback: QrcodeErrorCallback | undefined): void;
-    private startCameraScan;
+    private getCameraFacingMode;
+    private startCameraAutomatically;
     pause(shouldPauseVideo?: boolean): void;
     resume(): void;
     getState(): Html5QrcodeScannerState;
@@ -45,9 +46,9 @@ export declare class Html5QrcodeScanner {
     private createPermissionButton;
     private createPermissionsUi;
     private createSectionControlPanel;
-    private renderFileScanUi;
+    private isTransitioning;
+    private startCameraScanning;
     private renderCameraSelection;
-    private createSectionSwap;
     private startCameraScanIfPermissionExistsOnSwap;
     private resetHeaderMessage;
     private setHeaderMessage;
