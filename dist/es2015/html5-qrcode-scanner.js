@@ -205,12 +205,9 @@ export class Html5QrcodeScanner {
         const scanRegionId = this.getScanRegionId();
         qrCodeScanRegion.id = scanRegionId;
         qrCodeScanRegion.style.width = "100%";
-        qrCodeScanRegion.style.minHeight = "100px";
+        qrCodeScanRegion.style.minHeight = "300px";
         qrCodeScanRegion.style.textAlign = "center";
         parent.appendChild(qrCodeScanRegion);
-        if (ScanTypeSelector.isCameraScanType(this.currentScanType)) {
-            this.insertCameraScanImageToScanRegion();
-        }
         const qrCodeDashboard = document.createElement("div");
         const dashboardId = this.getDashboardId();
         qrCodeDashboard.id = dashboardId;

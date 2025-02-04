@@ -484,31 +484,29 @@ export class Html5QrcodeScanner {
         supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA] // Force camera scan only
     };
 }
-    private createBasicLayout(parent: HTMLElement) {
-        parent.style.position = "relative";
-        parent.style.padding = "0px";
-        parent.style.border = "1px solid silver";
-        this.createHeader(parent);
+private createBasicLayout(parent: HTMLElement) {
+    parent.style.position = "relative";
+    parent.style.padding = "0px";
+    parent.style.border = "1px solid silver";
+    this.createHeader(parent);
 
-        const qrCodeScanRegion = document.createElement("div");
-        const scanRegionId = this.getScanRegionId();
-        qrCodeScanRegion.id = scanRegionId;
-        qrCodeScanRegion.style.width = "100%";
-        qrCodeScanRegion.style.minHeight = "100px";
-        qrCodeScanRegion.style.textAlign = "center";
-        parent.appendChild(qrCodeScanRegion);
-        if (ScanTypeSelector.isCameraScanType(this.currentScanType)) {
-            this.insertCameraScanImageToScanRegion();
-        }
+    const qrCodeScanRegion = document.createElement("div");
+    const scanRegionId = this.getScanRegionId();
+    qrCodeScanRegion.id = scanRegionId;
+    qrCodeScanRegion.style.width = "100%";
+    qrCodeScanRegion.style.minHeight = "300px"; // Increased height
+    qrCodeScanRegion.style.textAlign = "center";
+    parent.appendChild(qrCodeScanRegion);
 
-        const qrCodeDashboard = document.createElement("div");
-        const dashboardId = this.getDashboardId();
-        qrCodeDashboard.id = dashboardId;
-        qrCodeDashboard.style.width = "100%";
-        parent.appendChild(qrCodeDashboard);
+    const qrCodeDashboard = document.createElement("div");
+    const dashboardId = this.getDashboardId();
+    qrCodeDashboard.id = dashboardId;
+    qrCodeDashboard.style.width = "100%";
+    parent.appendChild(qrCodeDashboard);
 
-        this.setupInitialDashboard(qrCodeDashboard);
-    }
+    this.setupInitialDashboard(qrCodeDashboard);
+}
+
 
     private resetBasicLayout(mainContainer: HTMLElement) {
         mainContainer.style.border = "none";
