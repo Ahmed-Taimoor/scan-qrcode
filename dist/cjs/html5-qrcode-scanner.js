@@ -435,7 +435,7 @@ var Html5QrcodeScanner = (function () {
     };
     Html5QrcodeScanner.prototype.renderCameraSelection = function (cameras) {
         return __awaiter(this, void 0, void 0, function () {
-            var scpCameraScanRegion, rearCamera, _i, cameras_1, camera, facingMode, defaultCamera, cameraSelectUi, error_3, cameraSelectElement, newElement;
+            var scpCameraScanRegion, defaultCamera, _i, cameras_1, camera, facingMode, isMobile, switchButton, currentCameraIndex_1, cameraSelectUi, cameraSelectElement;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -452,7 +452,7 @@ var Html5QrcodeScanner = (function () {
                     case 2:
                         facingMode = _a.sent();
                         if (facingMode === 'environment') {
-                            rearCamera = camera;
+                            defaultCamera = camera;
                             return [3, 4];
                         }
                         _a.label = 3;
@@ -460,41 +460,43 @@ var Html5QrcodeScanner = (function () {
                         _i++;
                         return [3, 1];
                     case 4:
-                        defaultCamera = rearCamera || cameras[0];
-                        cameraSelectUi = null;
-                        try {
-                            cameraSelectUi = camera_selection_ui_1.CameraSelectionUi.create(scpCameraScanRegion, cameras);
+                        if (!defaultCamera && cameras.length > 0) {
+                            defaultCamera = cameras[0];
                         }
-                        catch (error) {
-                            console.error("Error creating camera selection UI:", error);
-                            return [2];
+                        isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                        if (!(isMobile && cameras.length === 2)) return [3, 5];
+                        switchButton = document.createElement('button');
+                        switchButton.className = 'html5-qrcode-element';
+                        switchButton.style.cssText = "\n                margin: 8px;\n                padding: 8px 16px;\n                border: 1px solid #ddd;\n                border-radius: 4px;\n                background: white;\n                cursor: pointer;\n            ";
+                        switchButton.textContent = '🔄 Switch Camera';
+                        currentCameraIndex_1 = cameras.indexOf(defaultCamera);
+                        switchButton.addEventListener('click', function () {
+                            currentCameraIndex_1 = (currentCameraIndex_1 + 1) % cameras.length;
+                            _this.startCameraScanning(cameras[currentCameraIndex_1].id);
+                        });
+                        scpCameraScanRegion.appendChild(switchButton);
+                        if (defaultCamera) {
+                            this.startCameraScanning(defaultCamera.id);
                         }
-                        if (!(defaultCamera && cameraSelectUi)) return [3, 8];
-                        _a.label = 5;
+                        return [3, 8];
                     case 5:
-                        _a.trys.push([5, 7, , 8]);
+                        cameraSelectUi = camera_selection_ui_1.CameraSelectionUi.create(scpCameraScanRegion, cameras);
+                        if (!defaultCamera) return [3, 7];
                         cameraSelectUi.setValue(defaultCamera.id);
                         return [4, this.startCameraScanning(defaultCamera.id)];
                     case 6:
                         _a.sent();
-                        return [3, 8];
+                        _a.label = 7;
                     case 7:
-                        error_3 = _a.sent();
-                        console.error("Error starting camera:", error_3);
-                        return [3, 8];
-                    case 8:
                         cameraSelectElement = document.getElementById(base_1.PublicUiElementIdAndClasses.CAMERA_SELECTION_SELECT_ID);
                         if (cameraSelectElement) {
-                            newElement = cameraSelectElement.cloneNode(true);
-                            if (cameraSelectElement.parentNode) {
-                                cameraSelectElement.parentNode.replaceChild(newElement, cameraSelectElement);
-                            }
-                            newElement.addEventListener('change', function (event) {
+                            cameraSelectElement.addEventListener('change', function (event) {
                                 var selectedCameraId = event.target.value;
                                 _this.startCameraScanning(selectedCameraId);
                             });
                         }
-                        return [2];
+                        _a.label = 8;
+                    case 8: return [2];
                 }
             });
         });

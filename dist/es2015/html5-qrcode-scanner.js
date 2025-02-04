@@ -387,42 +387,53 @@ export class Html5QrcodeScanner {
             const scpCameraScanRegion = document.getElementById(this.getDashboardSectionCameraScanRegionId());
             scpCameraScanRegion.innerHTML = '';
             scpCameraScanRegion.style.textAlign = "center";
-            let rearCamera;
+            let defaultCamera;
             for (const camera of cameras) {
                 const facingMode = yield this.getCameraFacingMode(camera.id);
                 if (facingMode === 'environment') {
-                    rearCamera = camera;
+                    defaultCamera = camera;
                     break;
                 }
             }
-            const defaultCamera = rearCamera || cameras[0];
-            let cameraSelectUi = null;
-            try {
-                cameraSelectUi = CameraSelectionUi.create(scpCameraScanRegion, cameras);
+            if (!defaultCamera && cameras.length > 0) {
+                defaultCamera = cameras[0];
             }
-            catch (error) {
-                console.error("Error creating camera selection UI:", error);
-                return;
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            if (isMobile && cameras.length === 2) {
+                const switchButton = document.createElement('button');
+                switchButton.className = 'html5-qrcode-element';
+                switchButton.style.cssText = `
+                margin: 8px;
+                padding: 8px 16px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                background: white;
+                cursor: pointer;
+            `;
+                switchButton.textContent = '🔄 Switch Camera';
+                let currentCameraIndex = cameras.indexOf(defaultCamera);
+                switchButton.addEventListener('click', () => {
+                    currentCameraIndex = (currentCameraIndex + 1) % cameras.length;
+                    this.startCameraScanning(cameras[currentCameraIndex].id);
+                });
+                scpCameraScanRegion.appendChild(switchButton);
+                if (defaultCamera) {
+                    this.startCameraScanning(defaultCamera.id);
+                }
             }
-            if (defaultCamera && cameraSelectUi) {
-                try {
+            else {
+                let cameraSelectUi = CameraSelectionUi.create(scpCameraScanRegion, cameras);
+                if (defaultCamera) {
                     cameraSelectUi.setValue(defaultCamera.id);
                     yield this.startCameraScanning(defaultCamera.id);
                 }
-                catch (error) {
-                    console.error("Error starting camera:", error);
+                const cameraSelectElement = document.getElementById(PublicUiElementIdAndClasses.CAMERA_SELECTION_SELECT_ID);
+                if (cameraSelectElement) {
+                    cameraSelectElement.addEventListener('change', (event) => {
+                        const selectedCameraId = event.target.value;
+                        this.startCameraScanning(selectedCameraId);
+                    });
                 }
-            }
-            const cameraSelectElement = document.getElementById(PublicUiElementIdAndClasses.CAMERA_SELECTION_SELECT_ID);
-            if (cameraSelectElement) {
-                const newElement = cameraSelectElement.cloneNode(true);
-                if (cameraSelectElement.parentNode) {
-                    cameraSelectElement.parentNode.replaceChild(newElement, cameraSelectElement);
-                }
-                newElement.addEventListener('change', (event) => {
-                    const selectedCameraId = event.target.value;
-                    this.startCameraScanning(selectedCameraId);
-                });
             }
         });
     }
