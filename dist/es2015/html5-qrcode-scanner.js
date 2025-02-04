@@ -215,7 +215,7 @@ export class Html5QrcodeScanner {
         const scanRegionId = this.getScanRegionId();
         qrCodeScanRegion.id = scanRegionId;
         qrCodeScanRegion.style.width = "100%";
-        qrCodeScanRegion.style.minHeight = "100px";
+        qrCodeScanRegion.style.minHeight = "400px";
         qrCodeScanRegion.style.textAlign = "center";
         parent.appendChild(qrCodeScanRegion);
         if (ScanTypeSelector.isCameraScanType(this.currentScanType)) {

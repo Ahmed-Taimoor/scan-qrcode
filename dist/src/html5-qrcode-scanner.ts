@@ -506,8 +506,8 @@ private createBasicLayout(parent: HTMLElement) {
     const qrCodeScanRegion = document.createElement("div");
     const scanRegionId = this.getScanRegionId();
     qrCodeScanRegion.id = scanRegionId;
-    qrCodeScanRegion.style.width = "100%";
-    qrCodeScanRegion.style.minHeight = "100px";
+    qrCodeScanRegion.style.width = "100%"; // Set width to 100% of the parent container
+    qrCodeScanRegion.style.minHeight = "400px"; // Increase the minimum height to 400px
     qrCodeScanRegion.style.textAlign = "center";
     parent.appendChild(qrCodeScanRegion);
     if (ScanTypeSelector.isCameraScanType(this.currentScanType)) {
