@@ -54,7 +54,6 @@ var ui_1 = require("./ui");
 var permissions_1 = require("./camera/permissions");
 var scan_type_selector_1 = require("./ui/scanner/scan-type-selector");
 var base_1 = require("./ui/scanner/base");
-var camera_selection_ui_1 = require("./ui/scanner/camera-selection-ui");
 var Html5QrcodeScannerStatus;
 (function (Html5QrcodeScannerStatus) {
     Html5QrcodeScannerStatus[Html5QrcodeScannerStatus["STATUS_DEFAULT"] = 0] = "STATUS_DEFAULT";
@@ -250,7 +249,7 @@ var Html5QrcodeScanner = (function () {
         parent.style.padding = "0px";
         parent.style.border = "none";
         var style = document.createElement('style');
-        style.textContent = "\n        /* Hide duplicate elements */\n        #".concat(this.getDashboardSectionCameraScanRegionId(), " span:not(:first-child) {\n            display: none !important;\n        }\n        #").concat(this.getDashboardSectionCameraScanRegionId(), " select:not(:first-of-type) {\n            display: none !important;\n        }\n        \n       /* Mobile-first styles */\n#").concat(this.elementId, " {\n    position: fixed !important;\n    top: 0 !important;\n    left: 0 !important;\n    width: 100% !important;\n    height: 100vh !important; /* Full viewport height */\n    margin: 0 !important;\n    padding: 0 !important;\n    z-index: 9999 !important;\n    background: #000 !important;\n}\n#").concat(this.getScanRegionId(), " svg {\n    position: absolute;\n    top: 50%;\n    left: 50%;\n    transform: translate(-50%, -50%);\n    z-index: 1; /* Ensure it's above the video */\n    pointer-events: none; /* Ensure it doesn't block interactions */\n}\n#").concat(this.getScanRegionId(), " {\n    width: 100% !important;\n    height: 100% !important; /* Take up full height of the parent */\n    min-height: unset !important;\n    max-height: unset !important;\n    background: #000;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    overflow: hidden;\n    position: relative;\n}\n\n#").concat(this.getScanRegionId(), " video {\n    width: 100% !important;\n    height: 100% !important;\n    object-fit: cover; /* Ensures the video fills the container without distortion */\n}\n\n/* Dashboard section styling */\n#").concat(this.getDashboardId(), " {\n    position: fixed;\n    bottom: 0;\n    left: 0;\n    width: 100%;\n    background: rgba(0, 0, 0, 0.7);\n    padding: 10px;\n    z-index: 10000;\n}\n\n/* Camera selection dropdown */\n#html5-qrcode-select-camera {\n    padding: 12px;\n    font-size: 16px;\n    margin: 10px auto;\n    border-radius: 8px;\n    border: 1px solid #ddd;\n    width: 90%;\n    max-width: 400px;\n    display: block;\n    background: white;\n}\n\n/* Header styling */\n#").concat(this.getHeaderMessageContainerId(), " {\n    position: fixed;\n    top: 0;\n    left: 0;\n    width: 100%;\n    background: rgba(0, 0, 0, 0.7);\n    color: white !important;\n    padding: 10px;\n    z-index: 10000;\n    text-align: center;\n}\n\n/* Desktop styles */\n@media (min-width: 768px) {\n    #").concat(this.elementId, " {\n        position: relative !important;\n        width: 800px !important;\n        height: 800px !important;\n        margin: 0 auto !important;\n        background: #f8f8f8 !important;\n    }\n\n    \n    #").concat(this.getScanRegionId(), " {\n        aspect-ratio: 1 / 1;\n        border-radius: 8px;\n        overflow: hidden;\n    }\n    \n    #").concat(this.getDashboardId(), " {\n        position: relative;\n        background: none;\n    }\n    \n    #").concat(this.getHeaderMessageContainerId(), " {\n        position: relative;\n        background: none;\n        color: inherit !important;\n    }\n}\n    ");
+        style.textContent = "\n    /* Hide duplicate elements and camera selection text */\n    #".concat(this.getDashboardSectionCameraScanRegionId(), " > span,\n    #").concat(this.getDashboardSectionCameraScanRegionId(), " > div > span {\n        display: none !important;\n    }\n    \n    #").concat(this.getDashboardSectionCameraScanRegionId(), " select:not(:first-of-type) {\n        display: none !important;\n    }\n        \n       /* Mobile-first styles */\n#").concat(this.elementId, " {\n    position: fixed !important;\n    top: 0 !important;\n    left: 0 !important;\n    width: 100% !important;\n    height: 100vh !important; /* Full viewport height */\n    margin: 0 !important;\n    padding: 0 !important;\n    z-index: 9999 !important;\n    background: #000 !important;\n}\n#").concat(this.getScanRegionId(), " svg {\n    position: absolute;\n    top: 50%;\n    left: 50%;\n    transform: translate(-50%, -50%);\n    z-index: 1; /* Ensure it's above the video */\n    pointer-events: none; /* Ensure it doesn't block interactions */\n}\n#").concat(this.getScanRegionId(), " {\n    width: 100% !important;\n    height: 100% !important; /* Take up full height of the parent */\n    min-height: unset !important;\n    max-height: unset !important;\n    background: #000;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    overflow: hidden;\n    position: relative;\n}\n\n#").concat(this.getScanRegionId(), " video {\n    width: 100% !important;\n    height: 100% !important;\n    object-fit: cover; /* Ensures the video fills the container without distortion */\n}\n\n/* Dashboard section styling */\n#").concat(this.getDashboardId(), " {\n    position: fixed;\n    bottom: 0;\n    left: 0;\n    width: 100%;\n    background: rgba(0, 0, 0, 0.7);\n    padding: 10px;\n    z-index: 10000;\n}\n\n/* Camera selection dropdown */\n    #html5-qrcode-select-camera {\n        padding: 12px;\n        font-size: 16px;\n        margin: 10px auto;\n        border-radius: 8px;\n        border: 1px solid #ddd;\n        width: 90%;\n        max-width: 400px;\n        display: block !important;\n        background: white;\n        -webkit-appearance: none;\n        -moz-appearance: none;\n        appearance: none;\n        background-image: url(\"data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007CB2%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.4-12.8z%22%2F%3E%3C%2Fsvg%3E\");\n        background-repeat: no-repeat;\n        background-position: right 12px top 50%;\n        background-size: 12px auto;\n        padding-right: 30px;\n    }\n\n\n/* Header styling */\n#").concat(this.getHeaderMessageContainerId(), " {\n    position: fixed;\n    top: 0;\n    left: 0;\n    width: 100%;\n    background: rgba(0, 0, 0, 0.7);\n    color: white !important;\n    padding: 10px;\n    z-index: 10000;\n    text-align: center;\n}\n\n/* Desktop styles */\n@media (min-width: 768px) {\n    #").concat(this.elementId, " {\n        position: relative !important;\n        width: 800px !important;\n        height: 800px !important;\n        margin: 0 auto !important;\n        background: #f8f8f8 !important;\n    }\n\n    \n    #").concat(this.getScanRegionId(), " {\n        aspect-ratio: 1 / 1;\n        border-radius: 8px;\n        overflow: hidden;\n    }\n    \n    #").concat(this.getDashboardId(), " {\n        position: relative;\n        background: none;\n    }\n    \n    #").concat(this.getHeaderMessageContainerId(), " {\n        position: relative;\n        background: none;\n        color: inherit !important;\n    }\n}\n    ");
         document.head.appendChild(style);
         this.createHeader(parent);
         var qrCodeScanRegion = document.createElement("div");
@@ -439,7 +438,7 @@ var Html5QrcodeScanner = (function () {
     };
     Html5QrcodeScanner.prototype.renderCameraSelection = function (cameras) {
         return __awaiter(this, void 0, void 0, function () {
-            var scpCameraScanRegion, orderedCameras, selectedCameraId, lastUsedCameraId_1, cameraPromises, cameraDetails, cameraSelectUi, cameraSelectElement, newElement;
+            var scpCameraScanRegion, selectElement, orderedCameras, selectedCameraId, lastUsedCameraId_1, cameraPromises, cameraDetails;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -447,6 +446,8 @@ var Html5QrcodeScanner = (function () {
                         scpCameraScanRegion = document.getElementById(this.getDashboardSectionCameraScanRegionId());
                         scpCameraScanRegion.innerHTML = '';
                         scpCameraScanRegion.style.textAlign = "center";
+                        selectElement = document.createElement('select');
+                        selectElement.id = base_1.PublicUiElementIdAndClasses.CAMERA_SELECTION_SELECT_ID;
                         orderedCameras = __spreadArray([], cameras, true);
                         if (this.config.rememberLastUsedCamera) {
                             lastUsedCameraId_1 = this.persistedDataManager.getLastUsedCameraId();
@@ -454,7 +455,6 @@ var Html5QrcodeScanner = (function () {
                                 selectedCameraId = lastUsedCameraId_1;
                             }
                         }
-                        if (!!selectedCameraId) return [3, 2];
                         cameraPromises = cameras.map(function (camera) { return __awaiter(_this, void 0, void 0, function () {
                             var facingMode;
                             return __generator(this, function (_a) {
@@ -482,60 +482,45 @@ var Html5QrcodeScanner = (function () {
                             return 0;
                         })
                             .map(function (detail) { return detail.camera; });
-                        selectedCameraId = orderedCameras[0].id;
-                        _a.label = 2;
-                    case 2:
-                        cameraSelectUi = null;
-                        try {
-                            cameraSelectUi = camera_selection_ui_1.CameraSelectionUi.create(scpCameraScanRegion, orderedCameras);
+                        if (!selectedCameraId) {
+                            selectedCameraId = orderedCameras[0].id;
                         }
-                        catch (error) {
-                            console.error("Error creating camera selection UI:", error);
-                            return [2];
-                        }
-                        if (selectedCameraId && cameraSelectUi) {
-                            try {
-                                cameraSelectUi.setValue(selectedCameraId);
-                                setTimeout(function () {
-                                    _this.startCameraScanning(selectedCameraId).catch(function (error) {
-                                        console.error("Error starting camera:", error);
-                                        var nextCamera = orderedCameras.find(function (camera) { return camera.id !== selectedCameraId; });
-                                        if (nextCamera) {
-                                            _this.startCameraScanning(nextCamera.id);
-                                            cameraSelectUi.setValue(nextCamera.id);
+                        orderedCameras.forEach(function (camera) {
+                            var option = document.createElement('option');
+                            option.value = camera.id;
+                            option.text = camera.label || "Camera ".concat(camera.id);
+                            selectElement.appendChild(option);
+                        });
+                        selectElement.value = selectedCameraId;
+                        selectElement.addEventListener('change', function (event) { return __awaiter(_this, void 0, void 0, function () {
+                            var newCameraId;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0:
+                                        newCameraId = event.target.value;
+                                        if (!(newCameraId !== selectedCameraId)) return [3, 2];
+                                        return [4, this.startCameraScanning(newCameraId)];
+                                    case 1:
+                                        _a.sent();
+                                        if (this.config.rememberLastUsedCamera) {
+                                            this.persistedDataManager.setLastUsedCameraId(newCameraId);
                                         }
-                                    });
-                                }, 150);
-                            }
-                            catch (error) {
-                                console.error("Error setting camera value:", error);
-                            }
-                        }
-                        cameraSelectElement = document.getElementById(base_1.PublicUiElementIdAndClasses.CAMERA_SELECTION_SELECT_ID);
-                        if (cameraSelectElement) {
-                            newElement = cameraSelectElement.cloneNode(true);
-                            if (cameraSelectElement.parentNode) {
-                                cameraSelectElement.parentNode.replaceChild(newElement, cameraSelectElement);
-                            }
-                            newElement.addEventListener('change', function (event) { return __awaiter(_this, void 0, void 0, function () {
-                                var newCameraId;
-                                return __generator(this, function (_a) {
-                                    switch (_a.label) {
-                                        case 0:
-                                            newCameraId = event.target.value;
-                                            if (!(newCameraId !== selectedCameraId)) return [3, 2];
-                                            return [4, this.startCameraScanning(newCameraId)];
-                                        case 1:
-                                            _a.sent();
-                                            if (this.config.rememberLastUsedCamera) {
-                                                this.persistedDataManager.setLastUsedCameraId(newCameraId);
-                                            }
-                                            _a.label = 2;
-                                        case 2: return [2];
-                                    }
-                                });
-                            }); });
-                        }
+                                        _a.label = 2;
+                                    case 2: return [2];
+                                }
+                            });
+                        }); });
+                        scpCameraScanRegion.appendChild(selectElement);
+                        setTimeout(function () {
+                            _this.startCameraScanning(selectedCameraId).catch(function (error) {
+                                console.error("Error starting camera:", error);
+                                var nextCamera = orderedCameras.find(function (camera) { return camera.id !== selectedCameraId; });
+                                if (nextCamera) {
+                                    _this.startCameraScanning(nextCamera.id);
+                                    selectElement.value = nextCamera.id;
+                                }
+                            });
+                        }, 150);
                         return [2];
                 }
             });
