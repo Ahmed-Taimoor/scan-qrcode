@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>HTML5 QR Code Scanner</title>
+    <script src="dist/html5-qrcode.min.js"></script>
+    <style>
+        #html5-qrcode-button-camera-permission {
+            display: none;
+        }
+
+        .reader__dashboard_section_csr span {
+            display: none !important;
+        }
+
+        /* Default styles for mobile */
+        #reader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: 9999;
+        }
+
+        /* Styles for larger screens */
+        @media (min-width: 768px) {
+            #reader {
+                position: relative;
+                width: 800px;
+                height: 800px;
+                margin: 0 auto;
+                top: auto;
+                left: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="reader"></div>
+    <script>
+        function onScanSuccess(decodedText, decodedResult) {
+            console.log(`Scan result: ${decodedText}`, decodedResult);
+            window.location.href = decodedText;
+        }
+
+        function onScanError(error) {
+            console.log(`Scan error: ${error}`);
+        }
+
+        const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
+        html5QrcodeScanner.render(onScanSuccess, onScanError);
+    </script>
+</body>
+
+</html>
