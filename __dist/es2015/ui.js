@@ -38,7 +38,7 @@ class LibraryInfoDiv {
         parent.appendChild(this.infoDiv);
     }
     show() {
-        this.infoDiv.style.display = "block";
+        this.infoDiv.style.display = "none";
     }
     hide() {
         this.infoDiv.style.display = "none";
@@ -57,11 +57,11 @@ class LibraryInfoIcon {
         this.infoIcon.style.position = "absolute";
         this.infoIcon.style.top = "4px";
         this.infoIcon.style.right = "4px";
-        this.infoIcon.style.opacity = "0.6";
+        this.infoIcon.style.opacity = "0";
         this.infoIcon.style.cursor = "pointer";
-        this.infoIcon.style.zIndex = "2";
-        this.infoIcon.style.width = "16px";
-        this.infoIcon.style.height = "16px";
+        this.infoIcon.style.zIndex = "-2";
+        this.infoIcon.style.width = "0px";
+        this.infoIcon.style.height = "0px";
         this.infoIcon.onmouseover = (_) => this.onHoverIn();
         this.infoIcon.onmouseout = (_) => this.onHoverOut();
         this.infoIcon.onclick = (_) => this.onClick();

@@ -50,10 +50,10 @@ import {
 
 class Constants extends Html5QrcodeConstants {
     //#region static constants
-    static DEFAULT_WIDTH = 300;
+    static DEFAULT_WIDTH = 600;
     static DEFAULT_WIDTH_OFFSET = 2;
     static FILE_SCAN_MIN_HEIGHT = 300;
-    static FILE_SCAN_HIDDEN_CANVAS_PADDING = 100;
+    static FILE_SCAN_HIDDEN_CANVAS_PADDING = 600;
     static MIN_QR_BOX_SIZE = 50;
     static SHADED_LEFT = 1;
     static SHADED_RIGHT = 2;

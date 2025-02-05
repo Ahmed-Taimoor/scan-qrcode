@@ -199,24 +199,127 @@ export class Html5QrcodeScanner {
     createBasicLayout(parent) {
         parent.style.position = "relative";
         parent.style.padding = "0px";
-        parent.style.border = "1px solid silver";
+        parent.style.border = "none";
         const style = document.createElement('style');
         style.textContent = `
+        /* Hide duplicate elements */
         #${this.getDashboardSectionCameraScanRegionId()} span:not(:first-child) {
             display: none !important;
         }
         #${this.getDashboardSectionCameraScanRegionId()} select:not(:first-of-type) {
             display: none !important;
         }
+        
+       /* Mobile-first styles */
+#${this.elementId} {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100vh !important; /* Full viewport height */
+    margin: 0 !important;
+    padding: 0 !important;
+    z-index: 9999 !important;
+    background: #000 !important;
+}
+#${this.getScanRegionId()} svg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1; /* Ensure it's above the video */
+    pointer-events: none; /* Ensure it doesn't block interactions */
+}
+#${this.getScanRegionId()} {
+    width: 100% !important;
+    height: 100% !important; /* Take up full height of the parent */
+    min-height: unset !important;
+    max-height: unset !important;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+}
+
+#${this.getScanRegionId()} video {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover; /* Ensures the video fills the container without distortion */
+}
+
+/* Dashboard section styling */
+#${this.getDashboardId()} {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 10px;
+    z-index: 10000;
+}
+
+/* Camera selection dropdown */
+#html5-qrcode-select-camera {
+    padding: 12px;
+    font-size: 16px;
+    margin: 10px auto;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    width: 90%;
+    max-width: 400px;
+    display: block;
+    background: white;
+}
+
+/* Header styling */
+#${this.getHeaderMessageContainerId()} {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    color: white !important;
+    padding: 10px;
+    z-index: 10000;
+    text-align: center;
+}
+
+/* Desktop styles */
+@media (min-width: 768px) {
+    #${this.elementId} {
+        position: relative !important;
+        width: 800px !important;
+        height: 800px !important;
+        margin: 0 auto !important;
+        background: #f8f8f8 !important;
+    }
+
+    
+    #${this.getScanRegionId()} {
+        aspect-ratio: 1 / 1;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    #${this.getDashboardId()} {
+        position: relative;
+        background: none;
+    }
+    
+    #${this.getHeaderMessageContainerId()} {
+        position: relative;
+        background: none;
+        color: inherit !important;
+    }
+}
     `;
         document.head.appendChild(style);
         this.createHeader(parent);
         const qrCodeScanRegion = document.createElement("div");
         const scanRegionId = this.getScanRegionId();
         qrCodeScanRegion.id = scanRegionId;
-        qrCodeScanRegion.style.width = "100%";
-        qrCodeScanRegion.style.minHeight = "400px";
-        qrCodeScanRegion.style.textAlign = "center";
         parent.appendChild(qrCodeScanRegion);
         if (ScanTypeSelector.isCameraScanType(this.currentScanType)) {
             this.insertCameraScanImageToScanRegion();
@@ -224,7 +327,6 @@ export class Html5QrcodeScanner {
         const qrCodeDashboard = document.createElement("div");
         const dashboardId = this.getDashboardId();
         qrCodeDashboard.id = dashboardId;
-        qrCodeDashboard.style.width = "100%";
         parent.appendChild(qrCodeDashboard);
         this.setupInitialDashboard(qrCodeDashboard);
     }
@@ -368,14 +470,13 @@ export class Html5QrcodeScanner {
                 yield new Promise(resolve => setTimeout(resolve, 300));
                 yield this.html5Qrcode.start(cameraId, {
                     fps: this.config.fps || 10,
-                    qrbox: this.config.qrbox,
+                    qrbox: 500,
                     aspectRatio: 1.0,
                     disableFlip: false
                 }, this.qrCodeSuccessCallback, this.qrCodeErrorCallback);
             }
             catch (error) {
                 console.error("Camera error:", error);
-                this.setHeaderMessage("Error accessing camera. Please try again.", Html5QrcodeScannerStatus.STATUS_WARNING);
             }
             finally {
                 this.isTransitioning = false;
@@ -387,30 +488,59 @@ export class Html5QrcodeScanner {
             const scpCameraScanRegion = document.getElementById(this.getDashboardSectionCameraScanRegionId());
             scpCameraScanRegion.innerHTML = '';
             scpCameraScanRegion.style.textAlign = "center";
-            let rearCamera;
-            for (const camera of cameras) {
-                const facingMode = yield this.getCameraFacingMode(camera.id);
-                if (facingMode === 'environment') {
-                    rearCamera = camera;
-                    break;
+            let orderedCameras = [...cameras];
+            let selectedCameraId;
+            if (this.config.rememberLastUsedCamera) {
+                const lastUsedCameraId = this.persistedDataManager.getLastUsedCameraId();
+                if (lastUsedCameraId && cameras.some(camera => camera.id === lastUsedCameraId)) {
+                    selectedCameraId = lastUsedCameraId;
                 }
             }
-            const defaultCamera = rearCamera || cameras[0];
+            if (!selectedCameraId) {
+                const cameraPromises = cameras.map((camera) => __awaiter(this, void 0, void 0, function* () {
+                    const facingMode = yield this.getCameraFacingMode(camera.id);
+                    return { camera, facingMode };
+                }));
+                const cameraDetails = yield Promise.all(cameraPromises);
+                orderedCameras = cameraDetails
+                    .sort((a, b) => {
+                    if (a.facingMode === 'environment')
+                        return -1;
+                    if (b.facingMode === 'environment')
+                        return 1;
+                    if (a.facingMode === 'user')
+                        return -1;
+                    if (b.facingMode === 'user')
+                        return 1;
+                    return 0;
+                })
+                    .map(detail => detail.camera);
+                selectedCameraId = orderedCameras[0].id;
+            }
             let cameraSelectUi = null;
             try {
-                cameraSelectUi = CameraSelectionUi.create(scpCameraScanRegion, cameras);
+                cameraSelectUi = CameraSelectionUi.create(scpCameraScanRegion, orderedCameras);
             }
             catch (error) {
                 console.error("Error creating camera selection UI:", error);
                 return;
             }
-            if (defaultCamera && cameraSelectUi) {
+            if (selectedCameraId && cameraSelectUi) {
                 try {
-                    cameraSelectUi.setValue(defaultCamera.id);
-                    yield this.startCameraScanning(defaultCamera.id);
+                    cameraSelectUi.setValue(selectedCameraId);
+                    setTimeout(() => {
+                        this.startCameraScanning(selectedCameraId).catch(error => {
+                            console.error("Error starting camera:", error);
+                            const nextCamera = orderedCameras.find(camera => camera.id !== selectedCameraId);
+                            if (nextCamera) {
+                                this.startCameraScanning(nextCamera.id);
+                                cameraSelectUi.setValue(nextCamera.id);
+                            }
+                        });
+                    }, 150);
                 }
                 catch (error) {
-                    console.error("Error starting camera:", error);
+                    console.error("Error setting camera value:", error);
                 }
             }
             const cameraSelectElement = document.getElementById(PublicUiElementIdAndClasses.CAMERA_SELECTION_SELECT_ID);
@@ -419,10 +549,15 @@ export class Html5QrcodeScanner {
                 if (cameraSelectElement.parentNode) {
                     cameraSelectElement.parentNode.replaceChild(newElement, cameraSelectElement);
                 }
-                newElement.addEventListener('change', (event) => {
-                    const selectedCameraId = event.target.value;
-                    this.startCameraScanning(selectedCameraId);
-                });
+                newElement.addEventListener('change', (event) => __awaiter(this, void 0, void 0, function* () {
+                    const newCameraId = event.target.value;
+                    if (newCameraId !== selectedCameraId) {
+                        yield this.startCameraScanning(newCameraId);
+                        if (this.config.rememberLastUsedCamera) {
+                            this.persistedDataManager.setLastUsedCameraId(newCameraId);
+                        }
+                    }
+                }));
             }
         });
     }

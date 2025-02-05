@@ -34,6 +34,15 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
 import { Html5QrcodeConstants, Html5QrcodeScanType, BaseLoggger, isNullOrUndefined, } from "./core";
 import { Html5Qrcode, } from "./html5-qrcode";
 import { Html5QrcodeScannerStrings, } from "./strings";
@@ -236,17 +245,14 @@ var Html5QrcodeScanner = (function () {
     Html5QrcodeScanner.prototype.createBasicLayout = function (parent) {
         parent.style.position = "relative";
         parent.style.padding = "0px";
-        parent.style.border = "1px solid silver";
+        parent.style.border = "none";
         var style = document.createElement('style');
-        style.textContent = "\n        #".concat(this.getDashboardSectionCameraScanRegionId(), " span:not(:first-child) {\n            display: none !important;\n        }\n        #").concat(this.getDashboardSectionCameraScanRegionId(), " select:not(:first-of-type) {\n            display: none !important;\n        }\n    ");
+        style.textContent = "\n        /* Hide duplicate elements */\n        #".concat(this.getDashboardSectionCameraScanRegionId(), " span:not(:first-child) {\n            display: none !important;\n        }\n        #").concat(this.getDashboardSectionCameraScanRegionId(), " select:not(:first-of-type) {\n            display: none !important;\n        }\n        \n       /* Mobile-first styles */\n#").concat(this.elementId, " {\n    position: fixed !important;\n    top: 0 !important;\n    left: 0 !important;\n    width: 100% !important;\n    height: 100vh !important; /* Full viewport height */\n    margin: 0 !important;\n    padding: 0 !important;\n    z-index: 9999 !important;\n    background: #000 !important;\n}\n#").concat(this.getScanRegionId(), " svg {\n    position: absolute;\n    top: 50%;\n    left: 50%;\n    transform: translate(-50%, -50%);\n    z-index: 1; /* Ensure it's above the video */\n    pointer-events: none; /* Ensure it doesn't block interactions */\n}\n#").concat(this.getScanRegionId(), " {\n    width: 100% !important;\n    height: 100% !important; /* Take up full height of the parent */\n    min-height: unset !important;\n    max-height: unset !important;\n    background: #000;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    overflow: hidden;\n    position: relative;\n}\n\n#").concat(this.getScanRegionId(), " video {\n    width: 100% !important;\n    height: 100% !important;\n    object-fit: cover; /* Ensures the video fills the container without distortion */\n}\n\n/* Dashboard section styling */\n#").concat(this.getDashboardId(), " {\n    position: fixed;\n    bottom: 0;\n    left: 0;\n    width: 100%;\n    background: rgba(0, 0, 0, 0.7);\n    padding: 10px;\n    z-index: 10000;\n}\n\n/* Camera selection dropdown */\n#html5-qrcode-select-camera {\n    padding: 12px;\n    font-size: 16px;\n    margin: 10px auto;\n    border-radius: 8px;\n    border: 1px solid #ddd;\n    width: 90%;\n    max-width: 400px;\n    display: block;\n    background: white;\n}\n\n/* Header styling */\n#").concat(this.getHeaderMessageContainerId(), " {\n    position: fixed;\n    top: 0;\n    left: 0;\n    width: 100%;\n    background: rgba(0, 0, 0, 0.7);\n    color: white !important;\n    padding: 10px;\n    z-index: 10000;\n    text-align: center;\n}\n\n/* Desktop styles */\n@media (min-width: 768px) {\n    #").concat(this.elementId, " {\n        position: relative !important;\n        width: 800px !important;\n        height: 800px !important;\n        margin: 0 auto !important;\n        background: #f8f8f8 !important;\n    }\n\n    \n    #").concat(this.getScanRegionId(), " {\n        aspect-ratio: 1 / 1;\n        border-radius: 8px;\n        overflow: hidden;\n    }\n    \n    #").concat(this.getDashboardId(), " {\n        position: relative;\n        background: none;\n    }\n    \n    #").concat(this.getHeaderMessageContainerId(), " {\n        position: relative;\n        background: none;\n        color: inherit !important;\n    }\n}\n    ");
         document.head.appendChild(style);
         this.createHeader(parent);
         var qrCodeScanRegion = document.createElement("div");
         var scanRegionId = this.getScanRegionId();
         qrCodeScanRegion.id = scanRegionId;
-        qrCodeScanRegion.style.width = "100%";
-        qrCodeScanRegion.style.minHeight = "400px";
-        qrCodeScanRegion.style.textAlign = "center";
         parent.appendChild(qrCodeScanRegion);
         if (ScanTypeSelector.isCameraScanType(this.currentScanType)) {
             this.insertCameraScanImageToScanRegion();
@@ -254,7 +260,6 @@ var Html5QrcodeScanner = (function () {
         var qrCodeDashboard = document.createElement("div");
         var dashboardId = this.getDashboardId();
         qrCodeDashboard.id = dashboardId;
-        qrCodeDashboard.style.width = "100%";
         parent.appendChild(qrCodeDashboard);
         this.setupInitialDashboard(qrCodeDashboard);
     };
@@ -410,7 +415,7 @@ var Html5QrcodeScanner = (function () {
                         _a.sent();
                         return [4, this.html5Qrcode.start(cameraId, {
                                 fps: this.config.fps || 10,
-                                qrbox: this.config.qrbox,
+                                qrbox: 500,
                                 aspectRatio: 1.0,
                                 disableFlip: false
                             }, this.qrCodeSuccessCallback, this.qrCodeErrorCallback)];
@@ -420,7 +425,6 @@ var Html5QrcodeScanner = (function () {
                     case 7:
                         error_2 = _a.sent();
                         console.error("Camera error:", error_2);
-                        this.setHeaderMessage("Error accessing camera. Please try again.", Html5QrcodeScannerStatus.STATUS_WARNING);
                         return [3, 9];
                     case 8:
                         this.isTransitioning = false;
@@ -432,7 +436,7 @@ var Html5QrcodeScanner = (function () {
     };
     Html5QrcodeScanner.prototype.renderCameraSelection = function (cameras) {
         return __awaiter(this, void 0, void 0, function () {
-            var scpCameraScanRegion, rearCamera, _i, cameras_1, camera, facingMode, defaultCamera, cameraSelectUi, error_3, cameraSelectElement, newElement;
+            var scpCameraScanRegion, orderedCameras, selectedCameraId, lastUsedCameraId_1, cameraPromises, cameraDetails, cameraSelectUi, cameraSelectElement, newElement;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -440,56 +444,94 @@ var Html5QrcodeScanner = (function () {
                         scpCameraScanRegion = document.getElementById(this.getDashboardSectionCameraScanRegionId());
                         scpCameraScanRegion.innerHTML = '';
                         scpCameraScanRegion.style.textAlign = "center";
-                        _i = 0, cameras_1 = cameras;
-                        _a.label = 1;
-                    case 1:
-                        if (!(_i < cameras_1.length)) return [3, 4];
-                        camera = cameras_1[_i];
-                        return [4, this.getCameraFacingMode(camera.id)];
-                    case 2:
-                        facingMode = _a.sent();
-                        if (facingMode === 'environment') {
-                            rearCamera = camera;
-                            return [3, 4];
+                        orderedCameras = __spreadArray([], cameras, true);
+                        if (this.config.rememberLastUsedCamera) {
+                            lastUsedCameraId_1 = this.persistedDataManager.getLastUsedCameraId();
+                            if (lastUsedCameraId_1 && cameras.some(function (camera) { return camera.id === lastUsedCameraId_1; })) {
+                                selectedCameraId = lastUsedCameraId_1;
+                            }
                         }
-                        _a.label = 3;
-                    case 3:
-                        _i++;
-                        return [3, 1];
-                    case 4:
-                        defaultCamera = rearCamera || cameras[0];
+                        if (!!selectedCameraId) return [3, 2];
+                        cameraPromises = cameras.map(function (camera) { return __awaiter(_this, void 0, void 0, function () {
+                            var facingMode;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4, this.getCameraFacingMode(camera.id)];
+                                    case 1:
+                                        facingMode = _a.sent();
+                                        return [2, { camera: camera, facingMode: facingMode }];
+                                }
+                            });
+                        }); });
+                        return [4, Promise.all(cameraPromises)];
+                    case 1:
+                        cameraDetails = _a.sent();
+                        orderedCameras = cameraDetails
+                            .sort(function (a, b) {
+                            if (a.facingMode === 'environment')
+                                return -1;
+                            if (b.facingMode === 'environment')
+                                return 1;
+                            if (a.facingMode === 'user')
+                                return -1;
+                            if (b.facingMode === 'user')
+                                return 1;
+                            return 0;
+                        })
+                            .map(function (detail) { return detail.camera; });
+                        selectedCameraId = orderedCameras[0].id;
+                        _a.label = 2;
+                    case 2:
                         cameraSelectUi = null;
                         try {
-                            cameraSelectUi = CameraSelectionUi.create(scpCameraScanRegion, cameras);
+                            cameraSelectUi = CameraSelectionUi.create(scpCameraScanRegion, orderedCameras);
                         }
                         catch (error) {
                             console.error("Error creating camera selection UI:", error);
                             return [2];
                         }
-                        if (!(defaultCamera && cameraSelectUi)) return [3, 8];
-                        _a.label = 5;
-                    case 5:
-                        _a.trys.push([5, 7, , 8]);
-                        cameraSelectUi.setValue(defaultCamera.id);
-                        return [4, this.startCameraScanning(defaultCamera.id)];
-                    case 6:
-                        _a.sent();
-                        return [3, 8];
-                    case 7:
-                        error_3 = _a.sent();
-                        console.error("Error starting camera:", error_3);
-                        return [3, 8];
-                    case 8:
+                        if (selectedCameraId && cameraSelectUi) {
+                            try {
+                                cameraSelectUi.setValue(selectedCameraId);
+                                setTimeout(function () {
+                                    _this.startCameraScanning(selectedCameraId).catch(function (error) {
+                                        console.error("Error starting camera:", error);
+                                        var nextCamera = orderedCameras.find(function (camera) { return camera.id !== selectedCameraId; });
+                                        if (nextCamera) {
+                                            _this.startCameraScanning(nextCamera.id);
+                                            cameraSelectUi.setValue(nextCamera.id);
+                                        }
+                                    });
+                                }, 150);
+                            }
+                            catch (error) {
+                                console.error("Error setting camera value:", error);
+                            }
+                        }
                         cameraSelectElement = document.getElementById(PublicUiElementIdAndClasses.CAMERA_SELECTION_SELECT_ID);
                         if (cameraSelectElement) {
                             newElement = cameraSelectElement.cloneNode(true);
                             if (cameraSelectElement.parentNode) {
                                 cameraSelectElement.parentNode.replaceChild(newElement, cameraSelectElement);
                             }
-                            newElement.addEventListener('change', function (event) {
-                                var selectedCameraId = event.target.value;
-                                _this.startCameraScanning(selectedCameraId);
-                            });
+                            newElement.addEventListener('change', function (event) { return __awaiter(_this, void 0, void 0, function () {
+                                var newCameraId;
+                                return __generator(this, function (_a) {
+                                    switch (_a.label) {
+                                        case 0:
+                                            newCameraId = event.target.value;
+                                            if (!(newCameraId !== selectedCameraId)) return [3, 2];
+                                            return [4, this.startCameraScanning(newCameraId)];
+                                        case 1:
+                                            _a.sent();
+                                            if (this.config.rememberLastUsedCamera) {
+                                                this.persistedDataManager.setLastUsedCameraId(newCameraId);
+                                            }
+                                            _a.label = 2;
+                                        case 2: return [2];
+                                    }
+                                });
+                            }); });
                         }
                         return [2];
                 }

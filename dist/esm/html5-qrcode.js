@@ -25,10 +25,10 @@ var Constants = (function (_super) {
     function Constants() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    Constants.DEFAULT_WIDTH = 300;
+    Constants.DEFAULT_WIDTH = 600;
     Constants.DEFAULT_WIDTH_OFFSET = 2;
     Constants.FILE_SCAN_MIN_HEIGHT = 300;
-    Constants.FILE_SCAN_HIDDEN_CANVAS_PADDING = 100;
+    Constants.FILE_SCAN_HIDDEN_CANVAS_PADDING = 600;
     Constants.MIN_QR_BOX_SIZE = 50;
     Constants.SHADED_LEFT = 1;
     Constants.SHADED_RIGHT = 2;

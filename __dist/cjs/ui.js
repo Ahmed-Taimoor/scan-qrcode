@@ -41,7 +41,7 @@ var LibraryInfoDiv = (function () {
         parent.appendChild(this.infoDiv);
     };
     LibraryInfoDiv.prototype.show = function () {
-        this.infoDiv.style.display = "block";
+        this.infoDiv.style.display = "none";
     };
     LibraryInfoDiv.prototype.hide = function () {
         this.infoDiv.style.display = "none";
@@ -62,11 +62,11 @@ var LibraryInfoIcon = (function () {
         this.infoIcon.style.position = "absolute";
         this.infoIcon.style.top = "4px";
         this.infoIcon.style.right = "4px";
-        this.infoIcon.style.opacity = "0.6";
+        this.infoIcon.style.opacity = "0";
         this.infoIcon.style.cursor = "pointer";
-        this.infoIcon.style.zIndex = "2";
-        this.infoIcon.style.width = "16px";
-        this.infoIcon.style.height = "16px";
+        this.infoIcon.style.zIndex = "-2";
+        this.infoIcon.style.width = "0px";
+        this.infoIcon.style.height = "0px";
         this.infoIcon.onmouseover = function (_) { return _this.onHoverIn(); };
         this.infoIcon.onmouseout = function (_) { return _this.onHoverOut(); };
         this.infoIcon.onclick = function (_) { return _this.onClick(); };
